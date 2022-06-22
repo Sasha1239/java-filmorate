@@ -23,9 +23,9 @@ public class FilmController {
 
     //Добавление фильма
     @PostMapping
-    public Film createFilm(@Valid @RequestBody Film film){
+    public Film create(@Valid @RequestBody Film film){
         validateFilm(film);
-        film.setId(idFilm++);
+        film.setId(++idFilm);
         films.put(film.getId(), film);
         log.info("Добавлен фильм {}", film);
         return film;
@@ -33,7 +33,7 @@ public class FilmController {
 
     //Обновление фильма
     @PutMapping
-    public Film updateFilm(@RequestBody Film film){
+    public Film update(@Valid @RequestBody Film film){
         validateFilm(film);
 
         if (film.getId() < 0) {
@@ -47,7 +47,7 @@ public class FilmController {
 
     //Получение всех фильмов
     @GetMapping
-    public List<Film> getAllFilms(){
+    public List<Film> getAll(){
         return new ArrayList<>(films.values());
     }
 

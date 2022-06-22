@@ -40,7 +40,7 @@ class FilmorateApplicationTests {
         user.setLogin("Логин пользователя");
         user.setName("Наименование пользователя");
         user.setBirthday(LocalDate.now().minusYears(5));
-        userController.createUser(user);
+        userController.create(user);
 
         String validatorMessage = validator.validate(user).iterator().next().getMessage();
         assertEquals("Почта не может быть пустой", validatorMessage, "Текст ошибки валидации разный");
@@ -54,7 +54,7 @@ class FilmorateApplicationTests {
         user.setName("Наименование пользователя");
         user.setEmail("testYandex.ru");
         user.setBirthday(LocalDate.of(2000, 12, 12));
-        userController.createUser(user);
+        userController.create(user);
 
         String validatorMessage = validator.validate(user).iterator().next().getMessage();
         assertEquals("Неправильно написали почту", validatorMessage, "Текст ошибки валидации разный");
@@ -68,7 +68,7 @@ class FilmorateApplicationTests {
         user.setEmail("test@yandex.ru");
         user.setBirthday(LocalDate.of(1900, 10, 10));
 
-        userController.createUser(user);
+        userController.create(user);
         assertEquals(user.getLogin(), user.getName(), "Значения неравны");
     }
 
@@ -79,7 +79,7 @@ class FilmorateApplicationTests {
         user.setName("Наименование пользователя");
         user.setEmail("test@yandex.ru");
         user.setBirthday(LocalDate.of(1965, 1, 19));
-        userController.createUser(user);
+        userController.create(user);
 
         String validatorMessage = validator.validate(user).iterator().next().getMessage();
         assertEquals("Логин не может быть пустой", validatorMessage, "Текст ошибки валидации разный");
@@ -93,7 +93,7 @@ class FilmorateApplicationTests {
         user.setName("Наименование пользователя");
         user.setEmail("test@yandex.ru");
         user.setBirthday(LocalDate.of(1960, 10 , 20));
-        userController.createUser(user);
+        userController.create(user);
 
         String validatorMessage = validator.validate(user).iterator().next().getMessage();
         assertEquals("Логин не может содержать только пробельный символы", validatorMessage,
@@ -108,7 +108,7 @@ class FilmorateApplicationTests {
         user.setLogin("Логин пользователя");
         user.setEmail("test@yandex.ru");
         user.setBirthday(LocalDate.now().plusYears(5));
-        userController.createUser(user);
+        userController.create(user);
 
         String validatorMessage = validator.validate(user).iterator().next().getMessage();
         assertEquals("Дата рождения не может быть в будущем", validatorMessage,
@@ -123,9 +123,9 @@ class FilmorateApplicationTests {
         user.setLogin("Логин пользователя");
         user.setEmail("test@yandex.ru");
         user.setBirthday(LocalDate.of(1990, 12, 10));
-        userController.createUser(user);
+        userController.create(user);
 
-        User user1 = userController.updateUser(new User(0, "test1@yandex.ru", "Логин", "Имя",
+        User user1 = userController.update(new User(0, "test1@yandex.ru", "Логин", "Имя",
                 LocalDate.of(1991, 12, 11)));
 
         assertNotEquals(user, user1, "Данные пользователя совпадают");
@@ -138,7 +138,7 @@ class FilmorateApplicationTests {
         film.setDuration(30);
         film.setReleaseDate(LocalDate.now());
         film.setDescription("Описание фильма");
-        filmController.createFilm(film);
+        filmController.create(film);
 
         String validatorMessage = validator.validate(film).iterator().next().getMessage();
         assertEquals("Наименование фильма не может быть пустым", validatorMessage,
@@ -156,7 +156,7 @@ class FilmorateApplicationTests {
         film.setDescription(description);
 
         Throwable throwable = assertThrows(ValidationException.class, () -> {
-            filmController.createFilm(film);
+            filmController.create(film);
         });
         assertEquals("Максимальная длина описания — 200 символов", throwable.getMessage(),
                 "Текст ошибки валидации разный");
@@ -173,7 +173,7 @@ class FilmorateApplicationTests {
         film.setReleaseDate(LocalDate.of(1800, 12, 12));
 
         Throwable throwable = assertThrows(ValidationException.class, () -> {
-            filmController.createFilm(film);
+            filmController.create(film);
         });
         assertEquals("Дата релиза не может быть раньше 28 декабря 1895 года", throwable.getMessage(),
                 "Текст ошибки валидации разный");
@@ -187,7 +187,7 @@ class FilmorateApplicationTests {
         film.setDescription("Описание фильма");
         film.setReleaseDate(LocalDate.now());
         film.setDuration(-30);
-        filmController.createFilm(film);
+        filmController.create(film);
 
         String validatorMessage = validator.validate(film).iterator().next().getMessage();
         assertEquals("Продолжительность фильма должна быть положительной", validatorMessage,
@@ -202,9 +202,9 @@ class FilmorateApplicationTests {
         film.setDescription("Описание фильма");
         film.setDuration(50);
         film.setReleaseDate(LocalDate.of(1992, 12, 10));
-        filmController.createFilm(film);
+        filmController.create(film);
 
-        Film film1 = filmController.updateFilm(new Film(0, "Наименование", "Описание",
+        Film film1 = filmController.update(new Film(0, "Наименование", "Описание",
                 LocalDate.of(1991, 12, 4), 45));
 
         assertNotEquals(film, film1, "Данные фильма совпадают");
@@ -218,16 +218,16 @@ class FilmorateApplicationTests {
         film.setDescription("Описание фильма");
         film.setDuration(50);
         film.setReleaseDate(LocalDate.of(1992, 12, 10));
-        filmController.createFilm(film);
+        filmController.create(film);
 
         Film film1 = new Film();
         film1.setName("Наименование фильма1");
         film1.setDescription("Описание фильма1");
         film1.setDuration(50);
         film1.setReleaseDate(LocalDate.of(1995, 2, 12));
-        filmController.createFilm(film1);
+        filmController.create(film1);
 
-        List<Film> filmList = filmController.getAllFilms();
+        List<Film> filmList = filmController.getAll();
 
         assertEquals(filmList.size(), 2, "Количество фильмов не совпадают");
     }
