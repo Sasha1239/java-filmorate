@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+
 @RestController
 @RequestMapping("/films")
 @Slf4j
@@ -34,12 +35,11 @@ public class FilmController {
     //Обновление фильма
     @PutMapping
     public Film update(@Valid @RequestBody Film film){
-        validateFilm(film);
-
-        if (film.getId() < 0) {
+        if (!films.containsKey(film.getId())) {
             throw new ValidationException("Попробуйте другой идентификатор фильма");
         }
 
+        validateFilm(film);
         films.put(film.getId(), film);
         log.info("Обновлен фильм {}", film);
         return film;
@@ -61,7 +61,8 @@ public class FilmController {
                 throw new ValidationException("Дата релиза не может быть раньше 28 декабря 1895 года");
             }
         } catch (ValidationException e){
-            throw new ValidationException(e.getMessage());
+            log.error("ValidationException", e);
+            throw e;
         }
     }
 }

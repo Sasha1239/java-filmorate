@@ -38,7 +38,7 @@ public class UserController {
     public User update(@Valid @RequestBody User user) {
         log.debug("Запрос на обновление пользователя: {}", user);
 
-        if (user.getId() < 0) {
+        if (!users.containsKey(user.getId())) {
             throw new ValidationException("Попробуйте другой идентификатор пользователя");
         }
 
