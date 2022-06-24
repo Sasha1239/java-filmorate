@@ -87,7 +87,7 @@ public class FilmControllerTest extends FilmorateApplicationTests{
         film.setReleaseDate(LocalDate.of(1992, 12, 10));
         filmController.create(film);
 
-        Film film1 = filmController.update(new Film(0, "Наименование", "Описание",
+        Film film1 = filmController.update(new Film(1, "Наименование", "Описание",
                 LocalDate.of(1991, 12, 4), 45));
 
         assertNotEquals(film, film1, "Данные фильма совпадают");
