@@ -16,9 +16,7 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 public class FilmService {
-    private static final int MAX_LENGTH_DESCRIPTION = 200;
     private static final LocalDate MAX_EARLY_DATE_FILM = LocalDate.of(1895, 12, 28);
-
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
 
@@ -36,8 +34,9 @@ public class FilmService {
 
     //Обновление фильма
     public Film update(Film film){
-        validateFindFilmId(film.getId());
+        getFilm(film.getId());
         validateFilm(film);
+        validateUpdateFilm(film);
         return filmStorage.update(film);
     }
 
@@ -46,24 +45,22 @@ public class FilmService {
         return filmStorage.getAll();
     }
 
-    //Получение фильма по идентификатору
     public Film getFilm(int idFilm){
-        validateFindFilmId(idFilm);
-        return filmStorage.getFilm(idFilm);
+       return filmStorage.getFilm(idFilm).orElseThrow(() ->
+               new NoSuchElementException("Попробуйте другой идентификатор фильма"));
     }
 
     //Пользователь ставит лайк фильму
     public void addLikeFilm(int idFilm, int idUser){
-        validateFindFilmId(idFilm);
         validateFindUserId(idUser);
-        filmStorage.getFilm(idFilm).addLike(idUser);
+        getFilm(idFilm).addLike(idUser);
     }
 
     //Пользователь удаляет лайк
     public void removeLikeFilm(int idUser, int idFilm){
-        validateFindFilmId(idFilm);
+        getFilm(idFilm);
         validateFindUserId(idUser);
-        filmStorage.getFilm(idFilm).removeLike(idUser);
+        getFilm(idFilm).removeLike(idUser);
     }
 
     //Получение самых популярных фильмов по кол-ву лайков или получение первых 10 фильмов
@@ -71,15 +68,6 @@ public class FilmService {
         List<Film> popularFilms = filmStorage.getAll().stream().sorted(((o1, o2) ->
                 o2.getLikesFilm().size() - o1.getLikesFilm().size())).limit(count).collect(Collectors.toList());
         return popularFilms;
-    }
-
-    //Валидация для поиска фильма по идентификатору
-    private void validateFindFilmId(int idFilm){
-        boolean filmNoExists = filmStorage.getAll().stream().noneMatch(film -> film.getId() == idFilm);
-
-        if (filmNoExists){
-            throw new NoSuchElementException("Попробуйте другой идентификатор фильма");
-        }
     }
 
     //Валидация пользователя
@@ -94,9 +82,6 @@ public class FilmService {
     //Валидация
     private void validateFilm(Film film){
         try {
-            if (film.getDescription().length() > MAX_LENGTH_DESCRIPTION) {
-                throw new ValidationException("Максимальная длина описания — 200 символов");
-            }
             if (film.getReleaseDate().isBefore(MAX_EARLY_DATE_FILM)){
                 throw new ValidationException("Дата релиза не может быть раньше 28 декабря 1895 года");
             }
@@ -106,4 +91,10 @@ public class FilmService {
         }
     }
 
+    //Валидация фильма при обновлении
+    private void validateUpdateFilm(Film film){
+        if ((film.getName() == null) || (film.getDescription() == null)) {
+            throw new RuntimeException("Используйте не null значения");
+        }
+    }
 }

@@ -24,18 +24,16 @@ public class UserService {
     //Добавление пользователя
     public User create(User user) {
         log.debug("Запрос на добавление пользователя: {}", user);
-
-        if (user.getName() == null || user.getName().isBlank()) {
-            user.setName(user.getLogin());
-        }
-
+        validateNameUser(user);
         return userStorage.create(user);
     }
 
     //Обновление пользователя
     public User update(User user) {
         log.debug("Запрос на обновление пользователя: {}", user);
-        validateFindUserId(user.getId());
+        getUser(user.getId());
+        validateNameUser(user);
+        validateUpdateUser(user);
         return userStorage.update(user);
     }
 
@@ -46,31 +44,26 @@ public class UserService {
 
     //Получение пользователя по идентификатору
     public User getUser(int idUser){
-        validateFindUserId(idUser);
-        return userStorage.getUser(idUser);
+        return userStorage.getUser(idUser).orElseThrow(() ->
+                new NoSuchElementException("Попробуйте другой идентификатор пользователя"));
     }
 
     //Добавление в друзья
     public void addFriend(int idUser, int idFriend){
-        validateFindUserId(idUser);
-        validateFindUserId(idFriend);
-        userStorage.getUser(idUser).addFriend(idFriend);
-        userStorage.getUser(idFriend).addFriend(idUser);
+        getUser(idUser).addFriend(idFriend);
+        getUser(idFriend).addFriend(idUser);
     }
 
     //Удаление из друзей
     public void removeFriend(int idUser, int idFriend){
-        validateFindUserId(idUser);
-        validateFindUserId(idFriend);
-        userStorage.getUser(idUser).removeUserFriend(idFriend);
-        userStorage.getUser(idFriend).removeUserFriend(idUser);
+        getUser(idUser).removeUserFriend(idFriend);
+        getUser(idFriend).removeUserFriend(idUser);
     }
 
     //Вывод друзей пользователя
     public List<User> getUserFriend(int idUser){
-        validateFindUserId(idUser);
         List<User> userFriendList = userStorage.getAll().stream().filter(user ->
-                userStorage.getUser(idUser).getFriends().contains(user.getId())).collect(Collectors.toList());
+                getUser(idUser).getFriends().contains(user.getId())).collect(Collectors.toList());
         return userFriendList;
     }
 
@@ -78,22 +71,27 @@ public class UserService {
     public List<User> getCommonFriends(int idUser, int idOtherUser){
         log.info("Запрос на вывод общих друзей между этим {} пользователем и этим {} пользователем",
                 idUser, idOtherUser);
-        validateFindUserId(idUser);
-        validateFindUserId(idOtherUser);
-        List<Integer> usersCommonFriends = new ArrayList<>(userStorage.getUser(idUser).getFriends());
-        usersCommonFriends.retainAll(userStorage.getUser(idOtherUser).getFriends());
+        getUser(idUser);
+        getUser(idOtherUser);
+        List<Integer> usersCommonFriends = new ArrayList<>(getUser(idUser).getFriends());
+        usersCommonFriends.retainAll(getUser(idOtherUser).getFriends());
 
         List<User> commonFriends = userStorage.getAll().stream().filter(user ->
                 usersCommonFriends.contains(user.getId())).collect(Collectors.toList());
         return commonFriends;
     }
 
-    //Валидация пользователя
-    private void validateFindUserId(int idUser){
-        boolean userNoExists = userStorage.getAll().stream().noneMatch(user -> user.getId() == idUser);
+    //Валидация имени пользователя
+    private void validateNameUser(User user){
+        if (user.getName() == null || user.getName().isBlank()) {
+            user.setName(user.getLogin());
+        }
+    }
 
-        if (userNoExists){
-            throw new NoSuchElementException("Попробуйте другой идентификатор пользователя");
+    //Валидация при обновлении пользователя
+    private void validateUpdateUser(User user){
+        if ((user.getLogin() == null) || (user.getEmail() == null)) {
+            throw new RuntimeException("Используйте не null значения");
         }
     }
 }

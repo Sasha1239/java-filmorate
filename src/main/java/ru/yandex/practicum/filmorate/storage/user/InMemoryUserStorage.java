@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.storage.user;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.*;
@@ -17,11 +16,6 @@ public class InMemoryUserStorage implements UserStorage{
     //Добавление пользователя
     public User create(User user) {
         log.debug("Запрос на добавление пользователя: {}", user);
-
-        if (user.getName() == null || user.getName().isBlank()) {
-            user.setName(user.getLogin());
-        }
-
         user.setId(++idUser);
         users.put(user.getId(), user);
         log.info("Добавлен пользователь: {}", user);
@@ -31,11 +25,6 @@ public class InMemoryUserStorage implements UserStorage{
     //Обновление пользователя
     public User update(User user) {
         log.debug("Запрос на обновление пользователя: {}", user);
-
-        if (!users.containsKey(user.getId())) {
-            throw new ValidationException("Попробуйте другой идентификатор пользователя");
-        }
-
         users.put(user.getId(), user);
         log.info("Обновлен пользователь: {}", user);
         return user;
@@ -47,7 +36,7 @@ public class InMemoryUserStorage implements UserStorage{
     }
 
     //Получение пользователя по идентификатору
-    public User getUser(int idUser){
-        return users.get(idUser);
+    public Optional<User> getUser(int idUser){
+        return Optional.ofNullable(users.get(idUser));
     }
 }

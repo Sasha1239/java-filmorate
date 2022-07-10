@@ -8,10 +8,10 @@ import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class UserCotrollerTest extends FilmorateApplicationTests{
@@ -32,7 +32,38 @@ public class UserCotrollerTest extends FilmorateApplicationTests{
         userController.create(user);
 
         String validatorMessage = validator.validate(user).iterator().next().getMessage();
-        assertEquals("Почта не может быть пустой", validatorMessage, "Текст ошибки валидации разный");
+        assertEquals("Почта не может быть пустой или содержать пробельные символы",
+                validatorMessage, "Текст ошибки валидации разный");
+    }
+
+    //В почту пользователя передан null
+    @Test
+    public void addUserEmailNull() {
+        User user = new User();
+        user.setLogin("Логин пользователя");
+        user.setName("Наименование пользователя");
+        user.setBirthday(LocalDate.now().minusYears(5));
+        user.setEmail(null);
+        userController.create(user);
+
+        String validatorMessage = validator.validate(user).iterator().next().getMessage();
+        assertEquals("Почта не может быть пустой или содержать пробельные символы",
+                validatorMessage, "Текст ошибки валидации разный");
+    }
+
+    //В почте пользователя содержаться только пробельные символы
+    @Test
+    public void addUserEmailSpace() {
+        User user = new User();
+        user.setLogin("Логин пользователя");
+        user.setName("Наименование пользователя");
+        user.setBirthday(LocalDate.now().minusYears(5));
+        user.setEmail(" ");
+        userController.create(user);
+
+        String validatorMessage = validator.validate(user).iterator().next().getMessage();
+        assertEquals("Неправильно написали почту",
+                validatorMessage, "Текст ошибки валидации разный");
     }
 
     //Почта пользователя без @
@@ -55,6 +86,19 @@ public class UserCotrollerTest extends FilmorateApplicationTests{
         User user = new User();
         user.setLogin("Логин пользователя");
         user.setEmail("test@yandex.ru");
+        user.setBirthday(LocalDate.of(1900, 10, 10));
+
+        userController.create(user);
+        assertEquals(user.getLogin(), user.getName(), "Значения неравны");
+    }
+
+    //В имя пользователя передан null
+    @Test
+    public void addUserNameNull() {
+        User user = new User();
+        user.setLogin("Логин пользователя");
+        user.setEmail("test@yandex.ru");
+        user.setName(null);
         user.setBirthday(LocalDate.of(1900, 10, 10));
 
         userController.create(user);
@@ -115,10 +159,112 @@ public class UserCotrollerTest extends FilmorateApplicationTests{
         user.setBirthday(LocalDate.of(1990, 12, 10));
         userController.create(user);
 
-        User user1 = userController.update(new User(1, "test1@yandex.ru", "Логин", "Имя",
-                LocalDate.of(1991, 12, 11)));
+        User user1 = new User();
+        user1.setId(user.getId());
+        user1.setName("Имя");
+        user1.setLogin("Логин");
+        user1.setEmail("test1@yandex.ru");
+        user1.setBirthday(LocalDate.of(1991, 11, 11));
+        userController.update(user1);
 
         assertNotEquals(user, user1, "Данные пользователя совпадают");
+    }
+
+    //Обновление данных неизвестного пользователя
+    @Test
+    public void updateUnknownUserData(){
+        User user = new User();
+        user.setName("Наименование пользователя");
+        user.setLogin("Логин пользователя");
+        user.setEmail("test@yandex.ru");
+        user.setBirthday(LocalDate.of(1990, 12, 10));
+        userController.create(user);
+
+        User user1 = new User();
+        user1.setId(2);
+        user1.setName("Наименование");
+        user1.setLogin("Логин");
+        user1.setEmail("test1@yandex.ru");
+        user1.setBirthday(LocalDate.of(1991, 11, 11));
+
+        Throwable throwable = assertThrows(NoSuchElementException.class, () -> {
+            userController.update(user1);
+        });
+        assertEquals("Попробуйте другой идентификатор пользователя", throwable.getMessage(),
+                "Текст ошибки валидации разный");
+    }
+
+    //Обновление данных пользователя (передача null в имя пользователя)
+    @Test
+    public void updateUserDataWithNullName(){
+        User user = new User();
+        user.setName("Наименование пользователя");
+        user.setLogin("Логин пользователя");
+        user.setEmail("test@yandex.ru");
+        user.setBirthday(LocalDate.of(2000, 11, 11));
+        userController.create(user);
+
+        User user1 = new User();
+        user1.setId(user.getId());
+        user1.setName(null);
+        user1.setLogin("Логин");
+        user1.setEmail("test1@yandex.ru");
+        user1.setBirthday(LocalDate.of(1991, 11, 11));
+        userController.update(user1);
+
+        User userUpdate = userController.getUser(user.getId());
+
+        assertNotEquals(user, userUpdate, "Значение равны");
+        assertEquals(userUpdate.getName(), userUpdate.getLogin(), "Значения неравны");
+    }
+
+    //Обновление данных пользователя (передача null в почту пользователя)
+    @Test
+    public void updateUserDataWithNullEmail(){
+        User user = new User();
+        user.setName("Наименование пользователя");
+        user.setLogin("Логин пользователя");
+        user.setEmail("test@yandex.ru");
+        user.setBirthday(LocalDate.of(2000, 11, 11));
+        userController.create(user);
+
+        User user1 = new User();
+        user1.setId(user.getId());
+        user1.setName("Наименование");
+        user1.setLogin("Логин");
+        user1.setEmail(null);
+        user1.setBirthday(LocalDate.of(1991, 11, 11));
+
+        Throwable throwable = assertThrows(RuntimeException.class, () -> {
+            userController.update(user1);
+        });
+
+        assertEquals("Используйте не null значения", throwable.getMessage(),
+                "Текст ошибки валидации разный");
+    }
+
+    //Обновление данных пользователя (передача null в логин пользователя)
+    @Test
+    public void updateUserDataWithNullLogin(){
+        User user = new User();
+        user.setName("Наименование пользователя");
+        user.setLogin("Логин пользователя");
+        user.setEmail("test@yandex.ru");
+        user.setBirthday(LocalDate.of(2000, 11, 11));
+        userController.create(user);
+
+        User user1 = new User();
+        user1.setId(user.getId());
+        user1.setName("Наименование");
+        user1.setLogin(null);
+        user1.setEmail("test1@uande.ru");
+        user1.setBirthday(LocalDate.of(1991, 11, 11));
+        Throwable throwable = assertThrows(RuntimeException.class, () -> {
+            userController.update(user1);
+        });
+
+        assertEquals("Используйте не null значения", throwable.getMessage(),
+                "Текст ошибки валидации разный");
     }
 
     //Добавление в друзья
@@ -146,6 +292,23 @@ public class UserCotrollerTest extends FilmorateApplicationTests{
         assertEquals(userFriends[0], user1.getId(), "У пользователя нет друзей");
     }
 
+    //Добавление в друзья неизвестного пользователя
+    @Test
+    public void addUnknownFriend(){
+        User user = new User();
+        user.setName("Наименование пользователя");
+        user.setLogin("Логин пользователя");
+        user.setEmail("test@yandex.ru");
+        user.setBirthday(LocalDate.of(1990, 12, 10));
+        userController.create(user);
+
+        Throwable throwable = assertThrows(NoSuchElementException.class, () -> {
+            userController.addFriend(user.getId(), 2);
+        });
+        assertEquals("Попробуйте другой идентификатор пользователя", throwable.getMessage(),
+                "Текст ошибки валидации разный");
+    }
+
     //Удаление из друзей
     @Test
     public void removeFriend(){
@@ -168,7 +331,24 @@ public class UserCotrollerTest extends FilmorateApplicationTests{
         assertEquals(user.getFriends().size(), 0, "У пользователя есть друзья");
     }
 
-    //TODO Вывод друзей пользователя - выводятся правильно, но работает с ошибкой
+    //Удаление из друзей неизвестного пользователя
+    @Test
+    public void removeUnknownFriend(){
+        User user = new User();
+        user.setName("Наименование пользователя");
+        user.setLogin("Логин пользователя");
+        user.setEmail("test@yandex.ru");
+        user.setBirthday(LocalDate.of(1990, 12, 10));
+        userController.create(user);
+
+        Throwable throwable = assertThrows(NoSuchElementException.class, () -> {
+            userController.removeFriend(user.getId(), 2);
+        });
+        assertEquals("Попробуйте другой идентификатор пользователя", throwable.getMessage(),
+                "Текст ошибки валидации разный");
+    }
+
+    //Вывод друзей пользователя
     @Test
     public void getUserFriend(){
         User user = new User();
