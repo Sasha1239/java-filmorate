@@ -4,6 +4,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.DirtiesContext;
 import ru.yandex.practicum.filmorate.controller.UserController;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
@@ -187,7 +189,7 @@ public class UserCotrollerTest extends FilmorateApplicationTests{
         user1.setEmail("test1@yandex.ru");
         user1.setBirthday(LocalDate.of(1991, 11, 11));
 
-        Throwable throwable = assertThrows(NoSuchElementException.class, () -> {
+        Throwable throwable = assertThrows(NotFoundException.class, () -> {
             userController.update(user1);
         });
         assertEquals("Попробуйте другой идентификатор пользователя", throwable.getMessage(),
@@ -235,7 +237,7 @@ public class UserCotrollerTest extends FilmorateApplicationTests{
         user1.setEmail(null);
         user1.setBirthday(LocalDate.of(1991, 11, 11));
 
-        Throwable throwable = assertThrows(RuntimeException.class, () -> {
+        Throwable throwable = assertThrows(ValidationException.class, () -> {
             userController.update(user1);
         });
 
@@ -259,7 +261,7 @@ public class UserCotrollerTest extends FilmorateApplicationTests{
         user1.setLogin(null);
         user1.setEmail("test1@uande.ru");
         user1.setBirthday(LocalDate.of(1991, 11, 11));
-        Throwable throwable = assertThrows(RuntimeException.class, () -> {
+        Throwable throwable = assertThrows(ValidationException.class, () -> {
             userController.update(user1);
         });
 
@@ -302,7 +304,7 @@ public class UserCotrollerTest extends FilmorateApplicationTests{
         user.setBirthday(LocalDate.of(1990, 12, 10));
         userController.create(user);
 
-        Throwable throwable = assertThrows(NoSuchElementException.class, () -> {
+        Throwable throwable = assertThrows(NotFoundException.class, () -> {
             userController.addFriend(user.getId(), 2);
         });
         assertEquals("Попробуйте другой идентификатор пользователя", throwable.getMessage(),
@@ -341,7 +343,7 @@ public class UserCotrollerTest extends FilmorateApplicationTests{
         user.setBirthday(LocalDate.of(1990, 12, 10));
         userController.create(user);
 
-        Throwable throwable = assertThrows(NoSuchElementException.class, () -> {
+        Throwable throwable = assertThrows(NotFoundException.class, () -> {
             userController.removeFriend(user.getId(), 2);
         });
         assertEquals("Попробуйте другой идентификатор пользователя", throwable.getMessage(),

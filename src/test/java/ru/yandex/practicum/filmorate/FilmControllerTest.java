@@ -5,13 +5,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.DirtiesContext;
 import ru.yandex.practicum.filmorate.controller.FilmController;
 import ru.yandex.practicum.filmorate.controller.UserController;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 
+import javax.validation.ConstraintViolationException;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -35,11 +36,13 @@ public class FilmControllerTest extends FilmorateApplicationTests{
         film.setDuration(30);
         film.setReleaseDate(LocalDate.now());
         film.setDescription("Описание фильма");
-        filmController.create(film);
 
-        String validatorMessage = validator.validate(film).iterator().next().getMessage();
-        assertEquals("Наименование фильма не может быть пустым или содержать только пробельные символы",
-                validatorMessage, "Текст ошибки валидации разный");
+        Throwable throwable = assertThrows(ConstraintViolationException.class, () -> {
+            filmController.create(film);
+        });
+
+        assertEquals("create.film.name: Наименование фильма не может быть пустым или содержать только пробельные символы",
+                throwable.getMessage(), "Текст ошибки валидации разный");
     }
 
     //В наименование фильма передается null
@@ -50,11 +53,13 @@ public class FilmControllerTest extends FilmorateApplicationTests{
         film.setDuration(30);
         film.setReleaseDate(LocalDate.now());
         film.setDescription("Описание фильма");
-        filmController.create(film);
 
-        String validatorMessage = validator.validate(film).iterator().next().getMessage();
-        assertEquals("Наименование фильма не может быть пустым или содержать только пробельные символы",
-                validatorMessage, "Текст ошибки валидации разный");
+        Throwable throwable = assertThrows(ConstraintViolationException.class, () -> {
+            filmController.create(film);
+        });
+
+        assertEquals("create.film.name: Наименование фильма не может быть пустым или содержать только пробельные символы",
+                throwable.getMessage(), "Текст ошибки валидации разный");
     }
 
     //Наименование фильма состоит только из пробельных символов
@@ -65,11 +70,13 @@ public class FilmControllerTest extends FilmorateApplicationTests{
         film.setDuration(30);
         film.setReleaseDate(LocalDate.now());
         film.setDescription("Описание фильма");
-        filmController.create(film);
 
-        String validatorMessage = validator.validate(film).iterator().next().getMessage();
-        assertEquals("Наименование фильма не может быть пустым или содержать только пробельные символы",
-                validatorMessage, "Текст ошибки валидации разный");
+        Throwable throwable = assertThrows(ConstraintViolationException.class, () -> {
+            filmController.create(film);
+        });
+
+        assertEquals("create.film.name: Наименование фильма не может быть пустым или содержать только пробельные символы",
+                throwable.getMessage(), "Текст ошибки валидации разный");
     }
 
     //Длина описания фильма больше 200 символов
@@ -141,11 +148,13 @@ public class FilmControllerTest extends FilmorateApplicationTests{
         film.setDescription("Описание фильма");
         film.setReleaseDate(LocalDate.now());
         film.setDuration(-30);
-        filmController.create(film);
 
-        String validatorMessage = validator.validate(film).iterator().next().getMessage();
-        assertEquals("Продолжительность фильма должна быть положительной", validatorMessage,
-                "Текст ошибки валидации разный");
+        Throwable throwable = assertThrows(ConstraintViolationException.class, () -> {
+            filmController.create(film);
+        });
+
+        assertEquals("create.film.duration: Продолжительность фильма должна быть положительной",
+                throwable.getMessage(), "Текст ошибки валидации разный");
     }
 
     //Обновление данных фильма
@@ -186,7 +195,7 @@ public class FilmControllerTest extends FilmorateApplicationTests{
         film1.setDuration(45);
         film1.setReleaseDate(LocalDate.of(1991, 12, 4));
 
-        Throwable throwable = assertThrows(NoSuchElementException.class, () -> {
+        Throwable throwable = assertThrows(NotFoundException.class, () -> {
             filmController.update(film1);
         });
 
@@ -211,12 +220,12 @@ public class FilmControllerTest extends FilmorateApplicationTests{
         film1.setDuration(30);
         film1.setReleaseDate(LocalDate.of(1990, 11, 9));
 
-        Throwable throwable = assertThrows(RuntimeException.class, () -> {
+        Throwable throwable = assertThrows(ConstraintViolationException.class, () -> {
             filmController.update(film1);
         });
 
-        assertEquals("Используйте не null значения", throwable.getMessage(),
-                "Текст ошибки валидации разный");
+        assertEquals("update.film.name: Наименование фильма не может быть пустым или содержать только пробельные символы",
+                throwable.getMessage(), "Текст ошибки валидации разный");
 
     }
 
@@ -237,12 +246,12 @@ public class FilmControllerTest extends FilmorateApplicationTests{
         film1.setDuration(30);
         film1.setReleaseDate(LocalDate.of(1990, 11, 9));
 
-        Throwable throwable = assertThrows(RuntimeException.class, () -> {
+        Throwable throwable = assertThrows(ConstraintViolationException.class, () -> {
             filmController.update(film1);
         });
 
-        assertEquals("Используйте не null значения", throwable.getMessage(),
-                "Текст ошибки валидации разный");
+        assertEquals("update.film.description: Описание фильма не может быть пустым или содержать только пробельные символы",
+                throwable.getMessage(), "Текст ошибки валидации разный");
     }
 
     //Получение всех фльмов
@@ -300,7 +309,7 @@ public class FilmControllerTest extends FilmorateApplicationTests{
         film.setReleaseDate(LocalDate.of(1992, 12, 10));
         filmController.create(film);
 
-        Throwable throwable = assertThrows(NoSuchElementException.class, () -> {
+        Throwable throwable = assertThrows(NotFoundException.class, () -> {
             filmController.getFilm(2);
         });
 
@@ -341,7 +350,7 @@ public class FilmControllerTest extends FilmorateApplicationTests{
         user.setBirthday(LocalDate.now().minusYears(5));
         userController.create(user);
 
-        Throwable throwable = assertThrows(NoSuchElementException.class, () -> {
+        Throwable throwable = assertThrows(NotFoundException.class, () -> {
             filmController.addLikeFilm(1, user.getId());
         });
 
@@ -382,7 +391,7 @@ public class FilmControllerTest extends FilmorateApplicationTests{
         user.setBirthday(LocalDate.now().minusYears(5));
         userController.create(user);
 
-        Throwable throwable = assertThrows(NoSuchElementException.class, () -> {
+        Throwable throwable = assertThrows(NotFoundException.class, () -> {
             filmController.removeLikeFilm(1, user.getId());
         });
 

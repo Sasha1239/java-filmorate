@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.service.film;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
@@ -10,7 +11,6 @@ import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 @Service
@@ -36,7 +36,6 @@ public class FilmService {
     public Film update(Film film){
         getFilm(film.getId());
         validateFilm(film);
-        validateUpdateFilm(film);
         return filmStorage.update(film);
     }
 
@@ -47,7 +46,7 @@ public class FilmService {
 
     public Film getFilm(int idFilm){
        return filmStorage.getFilm(idFilm).orElseThrow(() ->
-               new NoSuchElementException("Попробуйте другой идентификатор фильма"));
+               new NotFoundException("Попробуйте другой идентификатор фильма"));
     }
 
     //Пользователь ставит лайк фильму
@@ -72,11 +71,8 @@ public class FilmService {
 
     //Валидация пользователя
     private void validateFindUserId(int idUser){
-        boolean userNoExists = userStorage.getAll().stream().noneMatch(user -> user.getId() == idUser);
-
-        if (userNoExists){
-            throw new NoSuchElementException("Попробуйте другой идентификатор пользователя");
-        }
+        userStorage.getUser(idUser).orElseThrow(() ->
+                new NotFoundException("Попробуйте другой идентификатор пользователя"));
     }
 
     //Валидация
@@ -88,13 +84,6 @@ public class FilmService {
         } catch (ValidationException e){
             log.error("ValidationException", e);
             throw e;
-        }
-    }
-
-    //Валидация фильма при обновлении
-    private void validateUpdateFilm(Film film){
-        if ((film.getName() == null) || (film.getDescription() == null)) {
-            throw new RuntimeException("Используйте не null значения");
         }
     }
 }

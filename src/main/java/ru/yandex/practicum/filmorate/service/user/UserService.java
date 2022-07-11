@@ -3,12 +3,13 @@ package ru.yandex.practicum.filmorate.service.user;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 @Service
@@ -45,7 +46,7 @@ public class UserService {
     //Получение пользователя по идентификатору
     public User getUser(int idUser){
         return userStorage.getUser(idUser).orElseThrow(() ->
-                new NoSuchElementException("Попробуйте другой идентификатор пользователя"));
+                new NotFoundException("Попробуйте другой идентификатор пользователя"));
     }
 
     //Добавление в друзья
@@ -91,7 +92,7 @@ public class UserService {
     //Валидация при обновлении пользователя
     private void validateUpdateUser(User user){
         if ((user.getLogin() == null) || (user.getEmail() == null)) {
-            throw new RuntimeException("Используйте не null значения");
+            throw new ValidationException("Используйте не null значения");
         }
     }
 }

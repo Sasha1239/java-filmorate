@@ -15,6 +15,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/films")
 @Slf4j
+@Validated
 public class FilmController {
     private final FilmService filmService;
 
@@ -60,7 +61,6 @@ public class FilmController {
     }
 
     //Получение самых популярных фильмов по кол-ву лайков или получение первых 10 фильмов
-    @Validated
     @GetMapping("/popular")
     public List<Film> getPopularFilm(@Positive @RequestParam(defaultValue = "10") int count){
         return filmService.getPopularFilm(count);
