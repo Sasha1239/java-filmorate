@@ -2,7 +2,7 @@
 Template repository for Filmorate project.
 
 **Схема БД:**
-![QuickDBD-export](https://user-images.githubusercontent.com/68199637/180275465-0a6671dc-832a-43b1-b2e2-b7f92bcac913.png)
+![QuickDBD-export (1)](https://user-images.githubusercontent.com/68199637/181582278-a0d5bc50-875d-44fc-b75d-74891467ac7c.png)
 
 **Основные SQL запросы:**
 
