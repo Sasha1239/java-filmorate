@@ -2,7 +2,7 @@
 Template repository for Filmorate project.
 
 **Схема БД:**
-![QuickDBD-export (1)](https://user-images.githubusercontent.com/68199637/181582278-a0d5bc50-875d-44fc-b75d-74891467ac7c.png)
+![QuickDBD-export (1)](https://user-images.githubusercontent.com/68199637/181582812-8cd779d0-702a-4320-a8f2-5d266caec2f7.png)
 
 **Основные SQL запросы:**
 
@@ -23,9 +23,10 @@ WHERE user_id = идентификатор пользователя`
 
 - Вывод друзей общих с пользователем:
 
-`SELECT * FROM Friends fr
-WHERE friend_id (SELECT * FROM Friends fr
-WHERE user_id = идентификатор пользователя);`
+`SELECT u.*
+FROM friends f
+JOIN users u ON f.friend_id = u.user_id
+WHERE f.user_id = идентификатор пользователя AND status = 'true';`
 
 *Фильмы:*
 
@@ -40,6 +41,10 @@ WHERE film_id = идентификатор фильма;`
 
 - Получение самых популярныйх фильмов по кол-ву лайков или первые 10 фильмов:
 
-`SELECT * FROM Film f
-INNER JOIN Film_Likes as fl ON fl.film_id = f.film_id
-LIMIT 10;`
+`SELECT f.*, fl.raiting
+FROM film f
+JOIN (SELECT film_id, COUNT(user_id) raiting
+FROM film_likes
+GROUP BY film_id) fl ON f.film_id =  fl.film_id
+ORDER BY fl.raiting DESC
+LIMIT 3;`
