@@ -8,6 +8,7 @@ import javax.validation.ValidatorFactory;
 import javax.validation.Validator;
 
 @SpringBootTest
+public
 class FilmorateApplicationTests {
     protected static Validator validator;
 

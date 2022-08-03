@@ -1,8 +1,13 @@
-package ru.yandex.practicum.filmorate;
+package ru.yandex.practicum.filmorate.controllerTest;
 
+import lombok.RequiredArgsConstructor;
+import org.assertj.core.util.DateUtil;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
+import ru.yandex.practicum.filmorate.FilmorateApplicationTests;
 import ru.yandex.practicum.filmorate.controller.FilmController;
 import ru.yandex.practicum.filmorate.controller.UserController;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
@@ -12,26 +17,25 @@ import ru.yandex.practicum.filmorate.model.User;
 
 import javax.validation.ConstraintViolationException;
 import java.time.LocalDate;
+import java.util.Date;
 import java.util.List;
-import java.util.Set;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-
+@SpringBootTest
+@AutoConfigureTestDatabase
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-public class FilmControllerTest extends FilmorateApplicationTests{
+public class FilmControllerTest extends FilmorateApplicationTests {
     private final FilmController filmController;
     private final UserController userController;
-
-    @Autowired
-    public FilmControllerTest(FilmController filmController, UserController userController){
-        this.filmController = filmController;
-        this.userController = userController;
-    }
 
     //Наименование фильма не заполнено
     @Test
     public void addFilmNameEmpty(){
+        Date date = DateUtil.parse(String.valueOf(LocalDate.now()));
+
         Film film = new Film();
         film.setDuration(30);
         film.setReleaseDate(LocalDate.now());
@@ -48,6 +52,8 @@ public class FilmControllerTest extends FilmorateApplicationTests{
     //В наименование фильма передается null
     @Test
     public void addFilmNameNull(){
+        Date date = DateUtil.parse(String.valueOf(LocalDate.now()));
+
         Film film = new Film();
         film.setName(null);
         film.setDuration(30);
@@ -65,6 +71,8 @@ public class FilmControllerTest extends FilmorateApplicationTests{
     //Наименование фильма состоит только из пробельных символов
     @Test
     public void addFilmNameSpace(){
+        Date date = DateUtil.parse(String.valueOf(LocalDate.now()));
+
         Film film = new Film();
         film.setName(" ");
         film.setDuration(30);
@@ -82,7 +90,9 @@ public class FilmControllerTest extends FilmorateApplicationTests{
     //Длина описания фильма больше 200 символов
     @Test
     public void addFilmDescriptionMorePossibleCountSymbol(){
+        Date date = DateUtil.parse(String.valueOf(LocalDate.now().minusYears(5)));
         String description = "а".repeat(201);
+
         Film film = new Film();
         film.setName("Наименование фильма");
         film.setDuration(30);
@@ -97,7 +107,9 @@ public class FilmControllerTest extends FilmorateApplicationTests{
 
     //Описание фильма не заполнено
     @Test
-    public void addFilmDescriptionEmpty(){;
+    public void addFilmDescriptionEmpty(){
+        Date date = DateUtil.parse(String.valueOf(LocalDate.now().minusYears(5)));
+
         Film film = new Film();
         film.setName("Наименование фильма");
         film.setDuration(30);
@@ -111,7 +123,9 @@ public class FilmControllerTest extends FilmorateApplicationTests{
 
     //В описание фильма передан null
     @Test
-    public void addFilmDescriptionNull(){;
+    public void addFilmDescriptionNull(){
+        Date date = DateUtil.parse(String.valueOf(LocalDate.now().minusYears(5)));
+
         Film film = new Film();
         film.setName("Наименование фильма");
         film.setDuration(30);
@@ -127,6 +141,8 @@ public class FilmControllerTest extends FilmorateApplicationTests{
     //Дата релиза раньше чем 28 декабря 1895 года
     @Test
     public void addFilmReleaseDateEarlyPossibleDate(){
+        Date date = DateUtil.parse(String.valueOf(LocalDate.of(1800, 12, 12)));
+
         Film film = new Film();
         film.setName("Наименование фильма");
         film.setDescription("Описание фильма");
@@ -143,6 +159,8 @@ public class FilmControllerTest extends FilmorateApplicationTests{
     //Продолжительность фильма отрицательная
     @Test
     public void addFilmDurationLessPossible(){
+        Date date = DateUtil.parse(String.valueOf(LocalDate.now()));
+
         Film film = new Film();
         film.setName("Наименование фильма");
         film.setDescription("Описание фильма");
@@ -160,6 +178,9 @@ public class FilmControllerTest extends FilmorateApplicationTests{
     //Обновление данных фильма
     @Test
     public void updateFilmData(){
+        Date date = DateUtil.parse(String.valueOf(LocalDate.of(1992, 12, 10)));
+        Date date1 = DateUtil.parse(String.valueOf(LocalDate.of(1991, 12, 4)));
+
         Film film = new Film();
         film.setName("Наименование фильма");
         film.setDescription("Описание фильма");
@@ -181,6 +202,9 @@ public class FilmControllerTest extends FilmorateApplicationTests{
     //Обновление данных неизвестного фильма
     @Test
     public void updateUnknownFilmData(){
+        Date date = DateUtil.parse(String.valueOf(LocalDate.of(1992, 12, 10)));
+        Date date1 = DateUtil.parse(String.valueOf(LocalDate.of(1991, 12, 4)));
+
         Film film = new Film();
         film.setName("Наименование фильма");
         film.setDescription("Описание фильма");
@@ -206,6 +230,9 @@ public class FilmControllerTest extends FilmorateApplicationTests{
     //Обновление данных фильма (передача null наименование фильма)
     @Test
     public void updateFilmWithNullName(){
+        Date date = DateUtil.parse(String.valueOf(LocalDate.of(1992, 12, 10)));
+        Date date1 = DateUtil.parse(String.valueOf(LocalDate.of(1990, 11, 9)));
+
         Film film = new Film();
         film.setName("Наименование фильма");
         film.setDescription("Описание фильма");
@@ -232,6 +259,9 @@ public class FilmControllerTest extends FilmorateApplicationTests{
     //Обновление данных фильма (передача null в описание фильма)
     @Test
     public void updateFilmWithNullDescription(){
+        Date date = DateUtil.parse(String.valueOf(LocalDate.of(1992, 12, 10)));
+        Date date1 = DateUtil.parse(String.valueOf(LocalDate.of(1990, 11, 9)));
+
         Film film = new Film();
         film.setName("Наименование фильма");
         film.setDescription("Описание фильма");
@@ -257,6 +287,9 @@ public class FilmControllerTest extends FilmorateApplicationTests{
     //Получение всех фльмов
     @Test
     public void getAllFilms(){
+        Date date = DateUtil.parse(String.valueOf(LocalDate.of(1992, 12, 10)));
+        Date date1 = DateUtil.parse(String.valueOf(LocalDate.of(1995, 2, 12)));
+
         Film film = new Film();
         film.setName("Наименование фильма");
         film.setDescription("Описание фильма");
@@ -279,6 +312,9 @@ public class FilmControllerTest extends FilmorateApplicationTests{
     //Получение фильма по идентификатору
     @Test
     public void getFilmId(){
+        Date date = DateUtil.parse(String.valueOf(LocalDate.of(1992, 12, 10)));
+        Date date1 = DateUtil.parse(String.valueOf(LocalDate.of(1995, 2, 12)));
+
         Film film = new Film();
         film.setName("Наименование фильма");
         film.setDescription("Описание фильма");
@@ -302,6 +338,8 @@ public class FilmControllerTest extends FilmorateApplicationTests{
     //Получение неизвестного фильма по идентификатору
     @Test
     public void getUnknownFilmId(){
+        Date date = DateUtil.parse(String.valueOf(LocalDate.of(1992, 12, 10)));
+
         Film film = new Film();
         film.setName("Наименование фильма");
         film.setDescription("Описание фильма");
@@ -320,6 +358,9 @@ public class FilmControllerTest extends FilmorateApplicationTests{
     //Поставить лайк фильму
     @Test
     public void addLikeFilm(){
+        Date date = DateUtil.parse(String.valueOf(LocalDate.of(1992, 12, 10)));
+        Date date1 = DateUtil.parse(String.valueOf(LocalDate.now().minusYears(5)));
+
         Film film = new Film();
         film.setName("Наименование фильма");
         film.setDescription("Описание фильма");
@@ -335,15 +376,19 @@ public class FilmControllerTest extends FilmorateApplicationTests{
 
         filmController.addLikeFilm(film.getId(), user.getId());
 
-        Set<Integer> likesFilm = film.getLikesFilm();
-        int[] likes = likesFilm.stream().mapToInt(Integer::intValue).toArray();
+        //Set<Integer> likesFilm = film.getLikesFilm();
+        List<Optional<Film>> likesFilm = filmController.getPopularFilm(10);
+        //int[] likes = likesFilm.stream().mapToInt(Integer::intValue).toArray();
 
-        assertEquals(likes[0], 1, "Лайк фильму не поставлен");
+        //assertEquals(likes[0], 1, "Лайк фильму не поставлен");
+        assertEquals(likesFilm.size(), 1, "Лайк фильму не поставлен");
     }
 
     //Поставить лайк неизвестному фильму
     @Test
     public void addLikeUnknownFilm(){
+        Date date = DateUtil.parse(String.valueOf(LocalDate.now().minusYears(5)));
+
         User user = new User();
         user.setLogin("Логин пользователя");
         user.setName("Наименование пользователя");
@@ -361,6 +406,9 @@ public class FilmControllerTest extends FilmorateApplicationTests{
     //Удаление лайка с фильма
     @Test
     public void removeLikeFilm(){
+        Date date = DateUtil.parse(String.valueOf(LocalDate.of(1992, 12, 10)));
+        Date dateUser = DateUtil.parse(String.valueOf(LocalDate.now().minusYears(5)));
+
         Film film = new Film();
         film.setName("Наименование фильма");
         film.setDescription("Описание фильма");
@@ -377,7 +425,8 @@ public class FilmControllerTest extends FilmorateApplicationTests{
         filmController.addLikeFilm(film.getId(), user.getId());
         filmController.removeLikeFilm(film.getId(), user.getId());
 
-        Set<Integer> likesFilm = film.getLikesFilm();
+        //Set<Integer> likesFilm = film.getLikesFilm();
+        List<Optional<Film>> likesFilm = filmController.getPopularFilm(10);
 
         assertEquals(likesFilm.size(), 0, "Лайк у фильма остался");
     }
@@ -385,6 +434,8 @@ public class FilmControllerTest extends FilmorateApplicationTests{
     //Удаление лайка с неизвестного фильма
     @Test
     public void removeLikeUnknownFilm(){
+        Date date = DateUtil.parse(String.valueOf(LocalDate.now().minusYears(5)));
+
         User user = new User();
         user.setLogin("Логин пользователя");
         user.setName("Наименование пользователя");
@@ -402,6 +453,11 @@ public class FilmControllerTest extends FilmorateApplicationTests{
     //Получение самых популярных фильмов по кол-ву лайков или получение первых 10 фильмов
     @Test
     public void getPopularFilm(){
+        Date date = DateUtil.parse(String.valueOf(LocalDate.of(1992, 12, 10)));
+        Date date1 = DateUtil.parse(String.valueOf(LocalDate.of(1995, 2, 12)));
+        Date date2 = DateUtil.parse(String.valueOf(LocalDate.of(2000, 2, 2)));
+        Date dateUser = DateUtil.parse(String.valueOf(LocalDate.now().minusYears(5)));
+
         Film film = new Film();
         film.setName("Наименование фильма");
         film.setDescription("Описание фильма");
@@ -432,7 +488,7 @@ public class FilmControllerTest extends FilmorateApplicationTests{
         filmController.addLikeFilm(film.getId(), user.getId());
         filmController.addLikeFilm(film1.getId(), user.getId());
 
-        List<Film> popularFilm = filmController.getPopularFilm(2);
+        List<Optional<Film>> popularFilm = filmController.getPopularFilm(2);
 
         assertEquals(popularFilm.size(), 2, "Количество не совпадает");
     }

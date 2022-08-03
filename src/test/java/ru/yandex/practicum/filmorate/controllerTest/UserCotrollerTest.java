@@ -1,28 +1,29 @@
-package ru.yandex.practicum.filmorate;
+package ru.yandex.practicum.filmorate.controllerTest;
 
+import lombok.RequiredArgsConstructor;
+import org.assertj.core.util.DateUtil;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
+import ru.yandex.practicum.filmorate.FilmorateApplicationTests;
 import ru.yandex.practicum.filmorate.controller.UserController;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Set;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@SpringBootTest
+@AutoConfigureTestDatabase
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-public class UserCotrollerTest extends FilmorateApplicationTests{
+public class UserCotrollerTest extends FilmorateApplicationTests {
     private final UserController userController;
-
-    @Autowired
-    public UserCotrollerTest(UserController userController){
-        this.userController = userController;
-    }
 
     //Почта пользователя не заполнена
     @Test
@@ -64,7 +65,7 @@ public class UserCotrollerTest extends FilmorateApplicationTests{
         userController.create(user);
 
         String validatorMessage = validator.validate(user).iterator().next().getMessage();
-        assertEquals("Неправильно написали почту",
+        assertEquals("Почта не может быть пустой или содержать пробельные символы",
                 validatorMessage, "Текст ошибки валидации разный");
     }
 
@@ -79,7 +80,9 @@ public class UserCotrollerTest extends FilmorateApplicationTests{
         userController.create(user);
 
         String validatorMessage = validator.validate(user).iterator().next().getMessage();
-        assertEquals("Неправильно написали почту", validatorMessage, "Текст ошибки валидации разный");
+
+        assertEquals("Неправильно написали почту",
+                validatorMessage, "Текст ошибки валидации разный");
     }
 
     //Имя пользователя не заполнено
@@ -128,7 +131,7 @@ public class UserCotrollerTest extends FilmorateApplicationTests{
         user.setLogin(" ");
         user.setName("Наименование пользователя");
         user.setEmail("test@yandex.ru");
-        user.setBirthday(LocalDate.of(1960, 10 , 20));
+        user.setBirthday(LocalDate.of(1960, 10, 20));
         userController.create(user);
 
         String validatorMessage = validator.validate(user).iterator().next().getMessage();
@@ -153,7 +156,7 @@ public class UserCotrollerTest extends FilmorateApplicationTests{
 
     //Обновление данных пользователя
     @Test
-    public void updateUserData(){
+    public void updateUserData() {
         User user = new User();
         user.setName("Наименование пользователя");
         user.setLogin("Логин пользователя");
@@ -174,7 +177,7 @@ public class UserCotrollerTest extends FilmorateApplicationTests{
 
     //Обновление данных неизвестного пользователя
     @Test
-    public void updateUnknownUserData(){
+    public void updateUnknownUserData() {
         User user = new User();
         user.setName("Наименование пользователя");
         user.setLogin("Логин пользователя");
@@ -198,7 +201,7 @@ public class UserCotrollerTest extends FilmorateApplicationTests{
 
     //Обновление данных пользователя (передача null в имя пользователя)
     @Test
-    public void updateUserDataWithNullName(){
+    public void updateUserDataWithNullName() {
         User user = new User();
         user.setName("Наименование пользователя");
         user.setLogin("Логин пользователя");
@@ -222,7 +225,10 @@ public class UserCotrollerTest extends FilmorateApplicationTests{
 
     //Обновление данных пользователя (передача null в почту пользователя)
     @Test
-    public void updateUserDataWithNullEmail(){
+    public void updateUserDataWithNullEmail() {
+        Date date = DateUtil.parse(String.valueOf(LocalDate.now()));
+        Date date1 = DateUtil.parse(String.valueOf(LocalDate.now()));
+
         User user = new User();
         user.setName("Наименование пользователя");
         user.setLogin("Логин пользователя");
@@ -247,7 +253,10 @@ public class UserCotrollerTest extends FilmorateApplicationTests{
 
     //Обновление данных пользователя (передача null в логин пользователя)
     @Test
-    public void updateUserDataWithNullLogin(){
+    public void updateUserDataWithNullLogin() {
+        Date date = DateUtil.parse(String.valueOf(LocalDate.now()));
+        Date date1 = DateUtil.parse(String.valueOf(LocalDate.now()));
+
         User user = new User();
         user.setName("Наименование пользователя");
         user.setLogin("Логин пользователя");
@@ -271,7 +280,7 @@ public class UserCotrollerTest extends FilmorateApplicationTests{
 
     //Добавление в друзья
     @Test
-    public void addFriend(){
+    public void addFriend() {
         User user = new User();
         user.setName("Наименование пользователя");
         user.setLogin("Логин пользователя");
@@ -288,15 +297,14 @@ public class UserCotrollerTest extends FilmorateApplicationTests{
 
         userController.addFriend(user.getId(), user1.getId());
 
-        Set<Integer> friends = user.getFriends();
-        int[] userFriends = friends.stream().mapToInt(Integer::intValue).toArray();
+        List<User> friends = userController.getUserFriend(user.getId());
 
-        assertEquals(userFriends[0], user1.getId(), "У пользователя нет друзей");
+        assertEquals(friends.size(), 1, "У пользователя нет друзей");
     }
 
     //Добавление в друзья неизвестного пользователя
     @Test
-    public void addUnknownFriend(){
+    public void addUnknownFriend() {
         User user = new User();
         user.setName("Наименование пользователя");
         user.setLogin("Логин пользователя");
@@ -313,7 +321,7 @@ public class UserCotrollerTest extends FilmorateApplicationTests{
 
     //Удаление из друзей
     @Test
-    public void removeFriend(){
+    public void removeFriend() {
         User user = new User();
         user.setName("Наименование пользователя");
         user.setLogin("Логин пользователя");
@@ -322,20 +330,24 @@ public class UserCotrollerTest extends FilmorateApplicationTests{
         userController.create(user);
 
         User user1 = new User();
-        user.setName("Наименование пользователя1");
-        user.setLogin("Логин пользователя1");
-        user.setEmail("test1@yandex.ru");
-        user.setBirthday(LocalDate.of(1991, 11, 11));
+        user1.setName("Наименование пользователя1");
+        user1.setLogin("Логин пользователя1");
+        user1.setEmail("test1@yandex.ru");
+        user1.setBirthday(LocalDate.of(1991, 11, 11));
         userController.create(user1);
 
+        userController.addFriend(user.getId(), user1.getId());
         userController.removeFriend(user.getId(), user1.getId());
 
-        assertEquals(user.getFriends().size(), 0, "У пользователя есть друзья");
+        List<User> friends = userController.getUserFriend(user.getId());
+
+        //assertEquals(user.getFriends().size(), 0, "У пользователя есть друзья");
+        assertEquals(friends.size(), 0, "У пользователя есть друзья");
     }
 
     //Удаление из друзей неизвестного пользователя
     @Test
-    public void removeUnknownFriend(){
+    public void removeUnknownFriend() {
         User user = new User();
         user.setName("Наименование пользователя");
         user.setLogin("Логин пользователя");
@@ -352,7 +364,7 @@ public class UserCotrollerTest extends FilmorateApplicationTests{
 
     //Вывод друзей пользователя
     @Test
-    public void getUserFriend(){
+    public void getUserFriend() {
         User user = new User();
         user.setName("Наименование пользователя");
         user.setLogin("Логин пользователя");
@@ -367,16 +379,23 @@ public class UserCotrollerTest extends FilmorateApplicationTests{
         user1.setBirthday(LocalDate.of(1991, 11, 11));
         userController.create(user1);
 
+        User user2 = new User();
+        user2.setName("Наименование пользователя2");
+        user2.setLogin("Логин пользователя2");
+        user2.setEmail("test2@yandex.ru");
+        user2.setBirthday(LocalDate.of(1992, 02, 12));
+        userController.create(user1);
+
         userController.addFriend(user.getId(), user1.getId());
 
-        List<User> userFriend = userController.getUserFriend(user1.getId());
+        List<User> userFriend = userController.getUserFriend(user.getId());
 
         assertEquals(userFriend.get(0), user, "Пользователи не совпадают");
     }
 
     //Вывод общих друзей с пользователем
     @Test
-    public void getCommonFriends(){
+    public void getCommonFriends() {
         User user = new User();
         user.setName("Наименование пользователя");
         user.setLogin("Логин пользователя");
@@ -402,6 +421,7 @@ public class UserCotrollerTest extends FilmorateApplicationTests{
         userController.addFriend(user1.getId(), user2.getId());
 
         List<User> userCommonFriends = userController.getCommonFriends(user.getId(), user1.getId());
+        System.out.println(userCommonFriends);
         assertEquals(userCommonFriends.get(0), user2, "Пользователи не совпадают");
     }
 }
