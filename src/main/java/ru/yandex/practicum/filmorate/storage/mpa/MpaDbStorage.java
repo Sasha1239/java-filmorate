@@ -28,7 +28,7 @@ public class MpaDbStorage implements MpaStorage {
     }
 
     private Mpa makeMpa(ResultSet resultSet, int rowNow) throws SQLException {
-        int idMpa = resultSet.getInt("mpa_rating");
+        int idMpa = resultSet.getInt("MPA_RATING_ID");
         String mpaName = resultSet.getString("mpa_name");
         return new Mpa(idMpa, mpaName);
     }

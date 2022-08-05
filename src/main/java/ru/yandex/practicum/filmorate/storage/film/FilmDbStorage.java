@@ -18,7 +18,6 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
-
 @Component
 @Slf4j
 public class FilmDbStorage implements FilmStorage {
@@ -41,7 +40,7 @@ public class FilmDbStorage implements FilmStorage {
             preparedStatement.setString(2, film.getDescription());
             preparedStatement.setDate(3, Date.valueOf(film.getReleaseDate()));
             preparedStatement.setLong(4, film.getDuration());
-            preparedStatement.setLong(5, film.getMpaRating().getId());
+            preparedStatement.setLong(5, film.getMpa().getId());
             return preparedStatement;
         }, keyHolder);
         int filmId = Objects.requireNonNull(keyHolder.getKey()).intValue();
@@ -57,17 +56,14 @@ public class FilmDbStorage implements FilmStorage {
     //Обновление фильма
     @Override
     public Film update(Film film) {
-        //films.put(film.getId(), film);
-        //log.info("Обновлен фильм {}", film);
         jdbcTemplate.update(FilmSql.UPDATE_FILM, film.getId(), film.getName(), film.getDescription(),
-                film.getReleaseDate(), film.getDuration(), film.getMpaRating().getId());
+                film.getReleaseDate(), film.getDuration(), film.getMpa().getId());
 
         if (film.getGenre() != null) {
             List<Genre> genres = removeGenreDuplicate(film);
             genreStorage.removeGenreToFilm(film.getId());
             genreStorage.addGenreToFilm(film.getId(), genres);
         }
-
         return film;
     }
 
@@ -81,7 +77,6 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public Optional<Film> getFilm(int idFilm) {
         return jdbcTemplate.query(FilmSql.GET_FILM_ID, this::makeFilm, idFilm).stream().findAny();
-        //return Optional.ofNullable(films.get(idFilm));
     }
 
     @Override
@@ -119,7 +114,6 @@ public class FilmDbStorage implements FilmStorage {
         int idFilm = resultSet.getInt("FILM_ID");
         String nameFilm = resultSet.getString("FILM_NAME");
         String descriptionFilm = resultSet.getString("DESCRIPTION");
-        //Date releaseDateFilm = Date.valueOf(resultSet.getDate("RELEASE_DATE").toLocalDate());
         LocalDate releaseDateFilm = LocalDate.parse(resultSet.getString("RELEASE_DATE"));
         int durationFilm = resultSet.getInt("DURATION");
         Mpa mpaRatingFilm = new Mpa(resultSet.getInt("MPA_RATING_ID"),

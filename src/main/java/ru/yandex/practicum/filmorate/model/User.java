@@ -8,11 +8,12 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 @Getter
 @Setter
 @ToString
+@EqualsAndHashCode
 public class User {
     private int id;
     @NotBlank(message = "Почта не может быть пустой или содержать пробельные символы")
@@ -23,4 +24,12 @@ public class User {
     private String name;
     @PastOrPresent(message = "Дата рождения не может быть в будущем")
     private LocalDate birthday;
+
+    /*public User(int id, String email ,String name, String login, LocalDate birthday){
+        this.id = id;
+        this.login = login;
+        this.name = name;
+        this.email = email;
+        this.birthday = birthday;
+    }*/
 }

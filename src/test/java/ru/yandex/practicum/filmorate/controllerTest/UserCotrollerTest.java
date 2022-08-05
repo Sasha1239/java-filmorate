@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.controllerTest;
 
 import lombok.RequiredArgsConstructor;
-import org.assertj.core.util.DateUtil;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -65,7 +64,7 @@ public class UserCotrollerTest extends FilmorateApplicationTests {
         userController.create(user);
 
         String validatorMessage = validator.validate(user).iterator().next().getMessage();
-        assertEquals("Почта не может быть пустой или содержать пробельные символы",
+        assertEquals("Неправильно написали почту",
                 validatorMessage, "Текст ошибки валидации разный");
     }
 
@@ -226,9 +225,6 @@ public class UserCotrollerTest extends FilmorateApplicationTests {
     //Обновление данных пользователя (передача null в почту пользователя)
     @Test
     public void updateUserDataWithNullEmail() {
-        Date date = DateUtil.parse(String.valueOf(LocalDate.now()));
-        Date date1 = DateUtil.parse(String.valueOf(LocalDate.now()));
-
         User user = new User();
         user.setName("Наименование пользователя");
         user.setLogin("Логин пользователя");
@@ -254,9 +250,6 @@ public class UserCotrollerTest extends FilmorateApplicationTests {
     //Обновление данных пользователя (передача null в логин пользователя)
     @Test
     public void updateUserDataWithNullLogin() {
-        Date date = DateUtil.parse(String.valueOf(LocalDate.now()));
-        Date date1 = DateUtil.parse(String.valueOf(LocalDate.now()));
-
         User user = new User();
         user.setName("Наименование пользователя");
         user.setLogin("Логин пользователя");
@@ -341,7 +334,6 @@ public class UserCotrollerTest extends FilmorateApplicationTests {
 
         List<User> friends = userController.getUserFriend(user.getId());
 
-        //assertEquals(user.getFriends().size(), 0, "У пользователя есть друзья");
         assertEquals(friends.size(), 0, "У пользователя есть друзья");
     }
 
@@ -362,7 +354,7 @@ public class UserCotrollerTest extends FilmorateApplicationTests {
                 "Текст ошибки валидации разный");
     }
 
-    //Вывод друзей пользователя
+    //TODO Вывод друзей пользователя
     @Test
     public void getUserFriend() {
         User user = new User();
@@ -379,21 +371,14 @@ public class UserCotrollerTest extends FilmorateApplicationTests {
         user1.setBirthday(LocalDate.of(1991, 11, 11));
         userController.create(user1);
 
-        User user2 = new User();
-        user2.setName("Наименование пользователя2");
-        user2.setLogin("Логин пользователя2");
-        user2.setEmail("test2@yandex.ru");
-        user2.setBirthday(LocalDate.of(1992, 02, 12));
-        userController.create(user1);
-
         userController.addFriend(user.getId(), user1.getId());
 
         List<User> userFriend = userController.getUserFriend(user.getId());
 
-        assertEquals(userFriend.get(0), user, "Пользователи не совпадают");
+        assertEquals(userFriend.get(0), user1, "Пользователи не совпадают");
     }
 
-    //Вывод общих друзей с пользователем
+    //TODO Вывод общих друзей с пользователем
     @Test
     public void getCommonFriends() {
         User user = new User();

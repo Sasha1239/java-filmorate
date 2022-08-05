@@ -9,11 +9,12 @@ import javax.validation.constraints.Size;
 import java.time.LocalDate;
 import java.util.List;
 
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 @Getter
 @Setter
 @ToString
+@EqualsAndHashCode
 public class Film {
     private int id;
     @NotBlank(message = "Наименование фильма не может быть пустым или содержать только пробельные символы")
@@ -25,6 +26,6 @@ public class Film {
     private LocalDate releaseDate;
     @Positive(message = "Продолжительность фильма должна быть положительной")
     private long duration;
-    private Mpa MpaRating;
+    private Mpa mpa;
     private List<Genre> genre;
 }

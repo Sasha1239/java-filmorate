@@ -57,17 +57,14 @@ public class FilmService {
     }
 
     //Пользователь удаляет лайк
-    public void removeLikeFilm(int idUser, int idFilm){
+    public void removeLikeFilm(int idFilm, int idUser){
         getFilm(idFilm);
         validateFindUserId(idUser);
-        filmStorage.removeLikeFilm(idUser, idFilm);
+        filmStorage.removeLikeFilm(idFilm, idUser);
     }
 
     //Получение самых популярных фильмов по кол-ву лайков или получение первых 10 фильмов
     public List<Optional<Film>> getPopularFilm(int count){
-        /*List<Film> popularFilms = filmStorage.getAll().stream().sorted(((o1, o2) ->
-                o2.getLikesFilm().size() - o1.getLikesFilm().size())).limit(count).collect(Collectors.toList());
-        return popularFilms;*/
         return filmStorage.getPopularFilms(count);
     }
 

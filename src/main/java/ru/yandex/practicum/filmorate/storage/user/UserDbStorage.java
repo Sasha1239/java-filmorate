@@ -50,11 +50,11 @@ public class UserDbStorage implements UserStorage {
     @Override
     //Обновление пользователя
     public User update(User user) {
-        /*log.debug("Запрос на обновление пользователя: {}", user);
-        users.put(user.getId(), user);
-        log.info("Обновлен пользователь: {}", user);*/
-        jdbcTemplate.update(UserSql.UPDATE_USER, user.getId(), user.getName(), user.getEmail(), user.getLogin(),
-                user.getBirthday());
+        //String sql = "UPDATE USERS SET USER_ID = ?, USER_NAME, EMAIL, LOGIN, BIRTHDAY) " +
+        //String sql = "update USERS SET USER_NAME = ?, EMAIL = ?, LOGIN = ?, BIRTHDAY = ?  " +
+                //"WHERE USER_ID = ?;";
+        jdbcTemplate.update(UserSql.UPDATE_USER, user.getName(), user.getEmail(), user.getLogin(),
+                user.getBirthday(), user.getId());
         return user;
     }
 
@@ -82,13 +82,25 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public List<User> getFriends(int idUser) {
-        List<User> friends = jdbcTemplate.query(UserSql.GET_FRIENDS, this::makeUser, idUser);
-        return friends;
+        String sql = "SELECT U.* FROM FRIENDS F " +
+                "JOIN USERS U on F.FRIEND_ID = U.USER_ID " +
+                "WHERE F.USER_ID = ?;";
+        //List<User> friends = jdbcTemplate.query(UserSql.GET_FRIENDS, this::makeUser, idUser);
+        //return jdbcTemplate.query(UserSql.GET_FRIENDS, this::makeUser, idUser);
+        return jdbcTemplate.query(sql, this::makeUser, idUser);
     }
 
     @Override
     public List<User> getCommonsFriend(int idUser, int idFriend) {
-        return jdbcTemplate.query(UserSql.GET_COMMON_FRIENDS, this::makeUser, idUser, idFriend);
+        String sql = "SELECT U.* FROM FRIENDS F " +
+                "JOIN USERS U ON F.FRIEND_ID = U.USER_ID " +
+                "WHERE F.USER_ID = ? " +
+                "UNION " +
+                "SELECT U.* FROM FRIENDS F " +
+                "JOIN USERS U ON F.FRIEND_ID = U.USER_ID " +
+                "WHERE F.USER_ID = ?;";
+        //return jdbcTemplate.query(UserSql.GET_COMMON_FRIENDS, this::makeUser, idUser, idFriend);
+        return jdbcTemplate.query(sql, this::makeUser, idUser, idFriend);
     }
 
     @Override
@@ -98,11 +110,10 @@ public class UserDbStorage implements UserStorage {
 
     private User makeUser(ResultSet resultSet, int rowNum) throws SQLException {
         int idUser = resultSet.getInt("USER_ID");
-        String userName = resultSet.getString("USER_NAME");
         String emailUser = resultSet.getString("EMAIL");
         String loginUser = resultSet.getString("LOGIN");
-        //Date birthdayUser = java.sql.Date.valueOf(resultSet.getDate("birthday").toLocalDate());
+        String userName = resultSet.getString("USER_NAME");
         LocalDate birthdayUser = LocalDate.parse(resultSet.getString("BIRTHDAY"));
-        return new User(idUser, userName, emailUser, loginUser, birthdayUser);
+        return new User(idUser, emailUser, loginUser, userName, birthdayUser);
     }
 }
