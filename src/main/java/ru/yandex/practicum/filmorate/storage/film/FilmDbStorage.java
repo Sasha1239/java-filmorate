@@ -32,21 +32,24 @@ public class FilmDbStorage implements FilmStorage {
     //Добавление фильма
     @Override
     public Film create(Film film) {
+        final String createFilmSql = "INSERT INTO FILM (FILM_NAME, DESCRIPTION, RELEASE_DATE, DURATION, " +
+                "MPA_RATING) VALUES (?, ?, ?, ?, ?);";
+
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(connection -> {
-            PreparedStatement preparedStatement = connection.prepareStatement(FilmSql.CREATE_FILM,
+            PreparedStatement preparedStatement = connection.prepareStatement(createFilmSql,
                     new String[]{"FILM_ID"});
             preparedStatement.setString(1, film.getName());
             preparedStatement.setString(2, film.getDescription());
             preparedStatement.setDate(3, Date.valueOf(film.getReleaseDate()));
             preparedStatement.setLong(4, film.getDuration());
-            preparedStatement.setLong(5, film.getMpa().getId());
+            preparedStatement.setInt(5, film.getMpa().getId());
             return preparedStatement;
         }, keyHolder);
         int filmId = Objects.requireNonNull(keyHolder.getKey()).intValue();
         film.setId(filmId);
 
-        if (film.getGenre() != null) {
+        if (film.getGenres() != null) {
             List<Genre> genres = removeGenreDuplicate(film);
             genreStorage.addGenreToFilm(filmId, genres);
         }
@@ -56,10 +59,13 @@ public class FilmDbStorage implements FilmStorage {
     //Обновление фильма
     @Override
     public Film update(Film film) {
-        jdbcTemplate.update(FilmSql.UPDATE_FILM, film.getId(), film.getName(), film.getDescription(),
+        final String updateFilmSql = "MERGE INTO FILM (FILM_ID, FILM_NAME, DESCRIPTION, RELEASE_DATE, " +
+                "DURATION, MPA_RATING) VALUES (?, ?, ?, ?, ?, ?);";
+
+        jdbcTemplate.update(updateFilmSql, film.getId(), film.getName(), film.getDescription(),
                 film.getReleaseDate(), film.getDuration(), film.getMpa().getId());
 
-        if (film.getGenre() != null) {
+        if (film.getGenres() != null) {
             List<Genre> genres = removeGenreDuplicate(film);
             genreStorage.removeGenreToFilm(film.getId());
             genreStorage.addGenreToFilm(film.getId(), genres);
@@ -70,44 +76,70 @@ public class FilmDbStorage implements FilmStorage {
     //Получение всех фильмов
     @Override
     public List<Film> getAll() {
-        return jdbcTemplate.query(FilmSql.GET_ALL_FILMS, this::makeFilm);
+        final String getAllFilmSql = "SELECT * FROM FILM AS F " +
+                "LEFT JOIN FILM_GENRE FG ON F.FILM_ID = FG.FILM_ID " +
+                "LEFT JOIN MPA M ON M.MPA_RATING_ID = F.MPA_RATING " +
+                "LEFT JOIN GENRE G ON G.GENRE_ID = FG.GENRE_ID;";
+
+        return jdbcTemplate.query(getAllFilmSql, this::makeFilm);
     }
 
     //Получение фильма по идентификатору
     @Override
     public Optional<Film> getFilm(int idFilm) {
-        return jdbcTemplate.query(FilmSql.GET_FILM_ID, this::makeFilm, idFilm).stream().findAny();
+        final String getFilmSql = "SELECT * FROM FILM AS F " +
+                "LEFT JOIN FILM_GENRE FG ON F.FILM_ID = FG.FILM_ID " +
+                "LEFT JOIN MPA M ON M.MPA_RATING_ID = F.MPA_RATING " +
+                "LEFT JOIN GENRE G ON G.GENRE_ID = FG.GENRE_ID " +
+                "LEFT JOIN FILM_LIKES FL on F.FILM_ID = FL.FILM_ID " +
+                "WHERE F.FILM_ID = ?;";
+
+        return jdbcTemplate.query(getFilmSql, this::makeFilm, idFilm).stream().findAny();
     }
 
     @Override
     public void removeFilm(int idFilm) {
-        jdbcTemplate.update(FilmSql.REMOVE_FILM, idFilm);
+        final String removeFilmSql = "DELETE FROM FILM WHERE FILM_ID = ?;";
+
+        jdbcTemplate.update(removeFilmSql, idFilm);
     }
 
     @Override
     public void addLikeFilm(int idFilm, int idUser) {
-        jdbcTemplate.update(FilmSql.LIKE_FILM, idFilm, idUser);
+        final String addLikeFilmSql = "INSERT INTO FILM_LIKES (FILM_ID, USER_ID) VALUES (?, ?);";
+
+        jdbcTemplate.update(addLikeFilmSql, idFilm, idUser);
     }
 
     @Override
     public void removeLikeFilm(int idFilm, int idUser) {
-        jdbcTemplate.update(FilmSql.REMOVE_LIKE, idFilm, idUser);
+        final String removeLikeFilm = "DELETE FROM FILM_LIKES WHERE FILM_ID = ? AND USER_ID = ?;";
+
+        jdbcTemplate.update(removeLikeFilm, idFilm, idUser);
     }
 
     @Override
     public List<Integer> getLike(int idFilm) {
-        return jdbcTemplate.queryForList(FilmSql.GET_LIKES, Integer.class, idFilm);
+        final String getLikeSql = "SELECT USER_ID FROM FILM_LIKES WHERE FILM_ID = ?;";
+
+        return jdbcTemplate.queryForList(getLikeSql, Integer.class, idFilm);
     }
 
     @Override
     public List<Optional<Film>> getPopularFilms(int count) {
-        List<Integer> idFilms = jdbcTemplate.queryForList(FilmSql.GET_POPULAR_FILMS, Integer.class, count);
+        final String getPopularFilmsSql = "SELECT F.FILM_ID FROM FILM_LIKES FL " +
+                "RIGHT JOIN FILM F on F.FILM_ID = FL.FILM_ID " +
+                "GROUP BY F.FILM_ID " +
+                "ORDER BY COUNT(FL.FILM_ID) " +
+                "DESC LIMIT ?;";
+
+        List<Integer> idFilms = jdbcTemplate.queryForList(getPopularFilmsSql, Integer.class, count);
         return idFilms.stream().map(this::getFilm).collect(Collectors.toList());
     }
 
     private List<Genre> removeGenreDuplicate(Film film) {
-        film.setGenre(film.getGenre().stream().distinct().collect(Collectors.toList()));
-        return film.getGenre();
+        film.setGenres(film.getGenres().stream().distinct().collect(Collectors.toList()));
+        return film.getGenres();
     }
 
     private Film makeFilm(ResultSet resultSet, int rowNum) throws SQLException {

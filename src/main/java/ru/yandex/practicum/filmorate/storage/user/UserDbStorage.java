@@ -50,10 +50,10 @@ public class UserDbStorage implements UserStorage {
     @Override
     //Обновление пользователя
     public User update(User user) {
-        //String sql = "UPDATE USERS SET USER_ID = ?, USER_NAME, EMAIL, LOGIN, BIRTHDAY) " +
-        //String sql = "update USERS SET USER_NAME = ?, EMAIL = ?, LOGIN = ?, BIRTHDAY = ?  " +
-                //"WHERE USER_ID = ?;";
-        jdbcTemplate.update(UserSql.UPDATE_USER, user.getName(), user.getEmail(), user.getLogin(),
+        final String updateUserSql = "UPDATE USERS SET USER_NAME = ?, EMAIL = ?, LOGIN = ?, BIRTHDAY = ?  " +
+                "WHERE USER_ID = ?;";
+
+        jdbcTemplate.update(updateUserSql, user.getName(), user.getEmail(), user.getLogin(),
                 user.getBirthday(), user.getId());
         return user;
     }
@@ -61,23 +61,31 @@ public class UserDbStorage implements UserStorage {
     @Override
     //Получение всех пользователей
     public List<User> getAll() {
-        return jdbcTemplate.query(UserSql.GET_ALL_USERS, this::makeUser);
+        final String getAllUsersSql = "SELECT * FROM USERS;";
+
+        return jdbcTemplate.query(getAllUsersSql, this::makeUser);
     }
 
     @Override
     //Получение пользователя по идентификатору
     public Optional<User> getUser(int idUser) {
-        return jdbcTemplate.query(UserSql.GET_USER, this::makeUser, idUser).stream().findAny();
+        final String getUserSql = "SELECT * FROM USERS WHERE USER_ID = ?;";
+
+        return jdbcTemplate.query(getUserSql, this::makeUser, idUser).stream().findAny();
     }
 
     @Override
     public void removeUser(int idUser) {
-        jdbcTemplate.update(UserSql.REMOVE_USER, idUser);
+        final String removeUserSql = "DELETE FROM USERS WHERE USER_ID = ?;";
+
+        jdbcTemplate.update(removeUserSql, idUser);
     }
 
     @Override
     public void addFriend(int idUser, int idFriend) {
-        jdbcTemplate.update(UserSql.ADD_FRIEND, idUser, idFriend);
+        final String addFriendSql = "INSERT INTO FRIENDS (USER_ID, FRIEND_ID) VALUES (?, ?);";
+
+        jdbcTemplate.update(addFriendSql, idUser, idFriend);
     }
 
     @Override
@@ -85,8 +93,6 @@ public class UserDbStorage implements UserStorage {
         String sql = "SELECT U.* FROM FRIENDS F " +
                 "JOIN USERS U on F.FRIEND_ID = U.USER_ID " +
                 "WHERE F.USER_ID = ?;";
-        //List<User> friends = jdbcTemplate.query(UserSql.GET_FRIENDS, this::makeUser, idUser);
-        //return jdbcTemplate.query(UserSql.GET_FRIENDS, this::makeUser, idUser);
         return jdbcTemplate.query(sql, this::makeUser, idUser);
     }
 
@@ -105,7 +111,9 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public void removeFriend(int idUser, int idFriend) {
-        jdbcTemplate.update(UserSql.REMOVE_FRIEND, idUser, idFriend);
+        final String removeFriendSql = "DELETE FROM FRIENDS WHERE USER_ID = ? AND FRIEND_ID = ?;";
+
+        jdbcTemplate.update(removeFriendSql, idUser, idFriend);
     }
 
     private User makeUser(ResultSet resultSet, int rowNum) throws SQLException {

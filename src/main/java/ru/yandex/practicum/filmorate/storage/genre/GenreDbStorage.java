@@ -6,7 +6,6 @@ import ru.yandex.practicum.filmorate.model.Genre;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -20,30 +19,42 @@ public class GenreDbStorage implements GenreStorage {
 
     @Override
     public Optional<Genre> getGenre(int idGenre) {
-        return jdbcTemplate.query(GenreSql.GET_GENRE, this::makeGenre, idGenre).stream().findAny();
+        final String getGenreSql = "SELECT * FROM GENRE WHERE GENRE_ID = ?";
+
+        return jdbcTemplate.query(getGenreSql, this::makeGenre, idGenre).stream().findAny();
     }
 
     @Override
     public List<Genre> getGenresFilm(int idFilm) {
-        return jdbcTemplate.query(GenreSql.GET_GENRE_TO_FILM, this::makeGenre, idFilm);
+        final String getGenresFilm = "SELECT * FROM GENRE " +
+                "LEFT JOIN FILM_GENRE FG ON GENRE.GENRE_ID = FG.GENRE_ID " +
+                "WHERE FG.FILM_ID = ?";
+
+        return jdbcTemplate.query(getGenresFilm, this::makeGenre, idFilm);
     }
 
     @Override
     public List<Genre> getAllGenres() {
-        return jdbcTemplate.query(GenreSql.GET_ALL_GENRES, this::makeGenre);
+        final String getAllGenresSql = "SELECT * FROM GENRE";
+
+        return jdbcTemplate.query(getAllGenresSql, this::makeGenre);
     }
 
     @Override
     public void addGenreToFilm(int idFilm, List<Genre> genres) {
+        final String addGenreFilm = "MERGE INTO FILM_GENRE (FILM_ID, GENRE_ID) VALUES (?, ?)";
+
         for (Genre genre : genres) {
             genre.setName(getGenre(genre.getId()).get().getName());
-            jdbcTemplate.update(GenreSql.ADD_GENRE_TO_FILM, idFilm, genre.getId());
+            jdbcTemplate.update(addGenreFilm, idFilm, genre.getId());
         }
     }
 
     @Override
     public void removeGenreToFilm(int idFilm) {
-        jdbcTemplate.update(GenreSql.REMOVE_GENRE_TO_FILM, idFilm);
+        final String removeGenreFilmSql = "DELETE FROM FILM_GENRE WHERE FILM_ID = ?";
+
+        jdbcTemplate.update(removeGenreFilmSql, idFilm);
     }
 
     private Genre makeGenre(ResultSet resultSet, int RowNow) throws SQLException {

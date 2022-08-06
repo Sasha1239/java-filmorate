@@ -8,7 +8,6 @@ public class FilmSql {
             "LEFT JOIN GENRE G ON G.GENRE_ID = FG.GENRE_ID " +
             "LEFT JOIN FILM_LIKES FL on F.FILM_ID = FL.FILM_ID " +
             "WHERE F.FILM_ID = ?;";
-    //protected static final String GET_ALL_FILMS = "SELECT * FROM FILM;";
     protected static final String GET_ALL_FILMS = "SELECT * FROM FILM AS F " +
             "LEFT JOIN FILM_GENRE FG ON F.FILM_ID = FG.FILM_ID " +
             "LEFT JOIN MPA M ON M.MPA_RATING_ID = F.MPA_RATING " +

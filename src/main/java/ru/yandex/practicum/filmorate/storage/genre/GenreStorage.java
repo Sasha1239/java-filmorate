@@ -4,6 +4,7 @@ import ru.yandex.practicum.filmorate.model.Genre;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public interface GenreStorage {
     Optional<Genre> getGenre(int idGenre);

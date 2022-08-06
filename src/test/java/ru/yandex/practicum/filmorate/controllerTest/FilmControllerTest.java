@@ -292,7 +292,6 @@ public class FilmControllerTest extends FilmorateApplicationTests {
         assertEquals(filmList.size(), 2, "Количество фильмов не совпадают");
     }
 
-    //TODO Получение фильма по идентификатору
     @Test
     public void getFilmId() {
         Film film = new Film();
@@ -301,7 +300,7 @@ public class FilmControllerTest extends FilmorateApplicationTests {
         film.setDuration(50);
         film.setReleaseDate(LocalDate.of(1992, 12, 10));
         film.setMpa(new Mpa(1, "G"));
-        film.setGenre(genres);
+        film.setGenres(genres);
         filmController.create(film);
 
         Film film1 = new Film();

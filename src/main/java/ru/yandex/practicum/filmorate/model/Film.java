@@ -8,6 +8,7 @@ import javax.validation.constraints.Positive;
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -27,5 +28,5 @@ public class Film {
     @Positive(message = "Продолжительность фильма должна быть положительной")
     private long duration;
     private Mpa mpa;
-    private List<Genre> genre;
+    private List<Genre> genres;
 }

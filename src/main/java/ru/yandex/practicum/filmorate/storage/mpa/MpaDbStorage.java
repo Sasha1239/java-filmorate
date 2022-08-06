@@ -19,17 +19,21 @@ public class MpaDbStorage implements MpaStorage {
 
     @Override
     public Optional<Mpa> getMpa(int idMpa) {
-        return jdbcTemplate.query(MpaSql.GET_MPA, this::makeMpa, idMpa).stream().findAny();
+        final String getMpaSql = "SELECT * FROM MPA WHERE MPA_RATING_ID = ?;";
+
+        return jdbcTemplate.query(getMpaSql, this::makeMpa, idMpa).stream().findAny();
     }
 
     @Override
     public List<Mpa> getAllMpa() {
-        return jdbcTemplate.query(MpaSql.GET_ALL_MPA, this::makeMpa);
+        final String getAllMpa = "SELECT * FROM MPA;";
+
+        return jdbcTemplate.query(getAllMpa, this::makeMpa);
     }
 
     private Mpa makeMpa(ResultSet resultSet, int rowNow) throws SQLException {
         int idMpa = resultSet.getInt("MPA_RATING_ID");
-        String mpaName = resultSet.getString("mpa_name");
+        String mpaName = resultSet.getString("MPA_NAME");
         return new Mpa(idMpa, mpaName);
     }
 }
