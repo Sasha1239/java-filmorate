@@ -354,7 +354,7 @@ public class UserCotrollerTest extends FilmorateApplicationTests {
                 "Текст ошибки валидации разный");
     }
 
-    //TODO Вывод друзей пользователя
+    //Вывод друзей пользователя
     @Test
     public void getUserFriend() {
         User user = new User();
@@ -378,7 +378,7 @@ public class UserCotrollerTest extends FilmorateApplicationTests {
         assertEquals(userFriend.get(0), user1, "Пользователи не совпадают");
     }
 
-    //TODO Вывод общих друзей с пользователем
+    //Вывод общих друзей с пользователем
     @Test
     public void getCommonFriends() {
         User user = new User();

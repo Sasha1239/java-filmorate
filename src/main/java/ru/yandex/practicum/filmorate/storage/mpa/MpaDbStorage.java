@@ -17,6 +17,7 @@ public class MpaDbStorage implements MpaStorage {
         this.jdbcTemplate = jdbcTemplate;
     }
 
+    //Получение рейтинга по идентификатору
     @Override
     public Optional<Mpa> getMpa(int idMpa) {
         final String getMpaSql = "SELECT * FROM MPA WHERE MPA_RATING_ID = ?;";
@@ -24,6 +25,7 @@ public class MpaDbStorage implements MpaStorage {
         return jdbcTemplate.query(getMpaSql, this::makeMpa, idMpa).stream().findAny();
     }
 
+    //Получение всех рейтингов
     @Override
     public List<Mpa> getAllMpa() {
         final String getAllMpa = "SELECT * FROM MPA;";

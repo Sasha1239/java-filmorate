@@ -10,10 +10,8 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 
+import java.sql.*;
 import java.sql.Date;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -46,31 +44,34 @@ public class FilmDbStorage implements FilmStorage {
             preparedStatement.setInt(5, film.getMpa().getId());
             return preparedStatement;
         }, keyHolder);
-        int filmId = Objects.requireNonNull(keyHolder.getKey()).intValue();
+        int filmId = (Objects.requireNonNull(keyHolder.getKey())).intValue();
         film.setId(filmId);
 
         if (film.getGenres() != null) {
             List<Genre> genres = removeGenreDuplicate(film);
             genreStorage.addGenreToFilm(filmId, genres);
         }
+
         return film;
     }
 
+
     //Обновление фильма
     @Override
-    public Film update(Film film) {
-        final String updateFilmSql = "MERGE INTO FILM (FILM_ID, FILM_NAME, DESCRIPTION, RELEASE_DATE, " +
-                "DURATION, MPA_RATING) VALUES (?, ?, ?, ?, ?, ?);";
+    public Optional<Film> update(Film film) {
+        final String updateFilmSql = "UPDATE FILM SET FILM_NAME = ?, DESCRIPTION = ?, RELEASE_DATE = ?, DURATION = ?, MPA_RATING = ? " +
+                "WHERE FILM_ID = ?;";
 
-        jdbcTemplate.update(updateFilmSql, film.getId(), film.getName(), film.getDescription(),
-                film.getReleaseDate(), film.getDuration(), film.getMpa().getId());
+        jdbcTemplate.update(updateFilmSql, film.getName(), film.getDescription(),
+                film.getReleaseDate(), film.getDuration(), film.getMpa().getId(), film.getId());
 
-        if (film.getGenres() != null) {
+        if (film.getGenres() != null){
             List<Genre> genres = removeGenreDuplicate(film);
             genreStorage.removeGenreToFilm(film.getId());
             genreStorage.addGenreToFilm(film.getId(), genres);
         }
-        return film;
+
+        return getFilm(film.getId());
     }
 
     //Получение всех фильмов
@@ -151,6 +152,6 @@ public class FilmDbStorage implements FilmStorage {
         Mpa mpaRatingFilm = new Mpa(resultSet.getInt("MPA_RATING_ID"),
                 resultSet.getString("MPA_NAME"));
         List<Genre> genres = genreStorage.getGenresFilm(idFilm);
-        return new Film(idFilm, nameFilm, descriptionFilm, releaseDateFilm, durationFilm, mpaRatingFilm, genres);
+        return new Film(idFilm, nameFilm, descriptionFilm, releaseDateFilm, durationFilm, mpaRatingFilm,genres);
     }
 }

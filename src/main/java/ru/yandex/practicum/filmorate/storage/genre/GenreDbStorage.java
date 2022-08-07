@@ -6,8 +6,10 @@ import ru.yandex.practicum.filmorate.model.Genre;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Component
 public class GenreDbStorage implements GenreStorage {
@@ -17,22 +19,26 @@ public class GenreDbStorage implements GenreStorage {
         this.jdbcTemplate = jdbcTemplate;
     }
 
+    //Получение жанра по идентификатору
     @Override
     public Optional<Genre> getGenre(int idGenre) {
         final String getGenreSql = "SELECT * FROM GENRE WHERE GENRE_ID = ?";
 
-        return jdbcTemplate.query(getGenreSql, this::makeGenre, idGenre).stream().findAny();
+        return jdbcTemplate.query(getGenreSql, this:: makeGenre, idGenre).stream().findAny();
     }
 
+    //Получение жанра по фильму
     @Override
     public List<Genre> getGenresFilm(int idFilm) {
         final String getGenresFilm = "SELECT * FROM GENRE " +
                 "LEFT JOIN FILM_GENRE FG ON GENRE.GENRE_ID = FG.GENRE_ID " +
                 "WHERE FG.FILM_ID = ?";
 
-        return jdbcTemplate.query(getGenresFilm, this::makeGenre, idFilm);
+        //return jdbcTemplate.query(getGenresFilm, this::makeGenre, idFilm);
+        return jdbcTemplate.query(getGenresFilm, this::makeGenre ,idFilm);
     }
 
+    //Получение всех жанров
     @Override
     public List<Genre> getAllGenres() {
         final String getAllGenresSql = "SELECT * FROM GENRE";
@@ -40,6 +46,7 @@ public class GenreDbStorage implements GenreStorage {
         return jdbcTemplate.query(getAllGenresSql, this::makeGenre);
     }
 
+    //Добавление жанра к фильму
     @Override
     public void addGenreToFilm(int idFilm, List<Genre> genres) {
         final String addGenreFilm = "MERGE INTO FILM_GENRE (FILM_ID, GENRE_ID) VALUES (?, ?)";
@@ -50,6 +57,7 @@ public class GenreDbStorage implements GenreStorage {
         }
     }
 
+    //Удаление жанра из фильма
     @Override
     public void removeGenreToFilm(int idFilm) {
         final String removeGenreFilmSql = "DELETE FROM FILM_GENRE WHERE FILM_ID = ?";

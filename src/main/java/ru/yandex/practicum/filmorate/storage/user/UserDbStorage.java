@@ -14,6 +14,7 @@ import java.sql.SQLException;
 import java.sql.Types;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 @Slf4j
@@ -74,6 +75,7 @@ public class UserDbStorage implements UserStorage {
         return jdbcTemplate.query(getUserSql, this::makeUser, idUser).stream().findAny();
     }
 
+    //Удаление пользователя
     @Override
     public void removeUser(int idUser) {
         final String removeUserSql = "DELETE FROM USERS WHERE USER_ID = ?;";
@@ -81,6 +83,7 @@ public class UserDbStorage implements UserStorage {
         jdbcTemplate.update(removeUserSql, idUser);
     }
 
+    //Добавление друга
     @Override
     public void addFriend(int idUser, int idFriend) {
         final String addFriendSql = "INSERT INTO FRIENDS (USER_ID, FRIEND_ID) VALUES (?, ?);";
@@ -88,6 +91,7 @@ public class UserDbStorage implements UserStorage {
         jdbcTemplate.update(addFriendSql, idUser, idFriend);
     }
 
+    //Получение друзей
     @Override
     public List<User> getFriends(int idUser) {
         String sql = "SELECT U.* FROM FRIENDS F " +
@@ -96,19 +100,20 @@ public class UserDbStorage implements UserStorage {
         return jdbcTemplate.query(sql, this::makeUser, idUser);
     }
 
+    //Получение общих друзей
     @Override
     public List<User> getCommonsFriend(int idUser, int idFriend) {
-        String sql = "SELECT U.* FROM FRIENDS F " +
+        final String sql = "SELECT U.* FROM FRIENDS F " +
                 "JOIN USERS U ON F.FRIEND_ID = U.USER_ID " +
-                "WHERE F.USER_ID = ? " +
+                "WHERE U.USER_ID = ? " +
                 "UNION " +
                 "SELECT U.* FROM FRIENDS F " +
                 "JOIN USERS U ON F.FRIEND_ID = U.USER_ID " +
                 "WHERE F.USER_ID = ?;";
-        //return jdbcTemplate.query(UserSql.GET_COMMON_FRIENDS, this::makeUser, idUser, idFriend);
         return jdbcTemplate.query(sql, this::makeUser, idUser, idFriend);
     }
 
+    //Удаление из друзей
     @Override
     public void removeFriend(int idUser, int idFriend) {
         final String removeFriendSql = "DELETE FROM FRIENDS WHERE USER_ID = ? AND FRIEND_ID = ?;";

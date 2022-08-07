@@ -33,7 +33,7 @@ public class FilmService {
     }
 
     //Обновление фильма
-    public Film update(Film film){
+    public Optional<Film> update(Film film){
         getFilm(film.getId());
         validateFilm(film);
         return filmStorage.update(film);

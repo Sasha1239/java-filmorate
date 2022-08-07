@@ -15,6 +15,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.film.FilmDbStorage;
 
 import javax.validation.ConstraintViolationException;
 import java.time.LocalDate;
@@ -32,6 +33,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class FilmControllerTest extends FilmorateApplicationTests {
     private final FilmController filmController;
     private final UserController userController;
+    private final FilmDbStorage filmDbStorage;
 
     private final List<Genre> genres = new ArrayList<>();
 
@@ -292,6 +294,7 @@ public class FilmControllerTest extends FilmorateApplicationTests {
         assertEquals(filmList.size(), 2, "Количество фильмов не совпадают");
     }
 
+    //Получение фильма по идентификатору
     @Test
     public void getFilmId() {
         Film film = new Film();
@@ -314,7 +317,7 @@ public class FilmControllerTest extends FilmorateApplicationTests {
         List<Film> filmList = filmController.getAll();
 
         assertEquals(filmList.size(), 2, "Количество фильмов не совпадают");
-        assertEquals(filmList.get(0), film, "Фильмы не совпадают");
+        assertEquals(filmList.get(0).getId(), film.getId(), "Фильмы не совпадают");
     }
 
     //Получение неизвестного фильма по идентификатору
@@ -377,7 +380,7 @@ public class FilmControllerTest extends FilmorateApplicationTests {
                 "Текст ошибки валидации разный");
     }
 
-    //TODO Удаление лайка с фильма
+    //Удаление лайка с фильма
     @Test
     public void removeLikeFilm() {
         Film film = new Film();
@@ -397,7 +400,7 @@ public class FilmControllerTest extends FilmorateApplicationTests {
         filmController.addLikeFilm(film.getId(), user.getId());
         filmController.removeLikeFilm(film.getId(), user.getId());
 
-        List<Optional<Film>> likesFilm = filmController.getPopularFilm(1);
+        List<Integer> likesFilm = filmDbStorage.getLike(film.getId());
 
         assertEquals(likesFilm.size(), 0, "Лайк у фильма остался");
     }

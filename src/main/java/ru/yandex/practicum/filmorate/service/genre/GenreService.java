@@ -15,10 +15,12 @@ import java.util.List;
 public class GenreService {
     private final GenreStorage genreStorage;
 
+    //Получение всех жанров
     public List<Genre> getAllGenres() {
         return genreStorage.getAllGenres();
     }
 
+    //Получение жанра по идентификатору
     public Genre getGenre(int idGenre) {
         return genreStorage.getGenre(idGenre).orElseThrow(() -> new NotFoundException
                 ("Попробуйте другой идентификатор жанра"));

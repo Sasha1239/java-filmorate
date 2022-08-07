@@ -31,7 +31,7 @@ public class FilmController {
 
     //Обновление фильма
     @PutMapping
-    public Film update(@Valid @RequestBody Film film){
+    public Optional<Film> update(@Valid @RequestBody Film film){
         return filmService.update(film);
     }
 

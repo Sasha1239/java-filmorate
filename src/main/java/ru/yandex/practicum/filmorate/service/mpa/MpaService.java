@@ -17,10 +17,12 @@ import java.util.Optional;
 public class MpaService {
     private final MpaStorage mpaStorage;
 
+    //Получение всех рейтингов
     public List<Mpa> getAllMpa() {
         return mpaStorage.getAllMpa();
     }
 
+    //Получение рейтинга по идентификатору
     public Optional<Mpa> getMpa(int idMpa){
         return Optional.ofNullable(mpaStorage.getMpa(idMpa).orElseThrow(() ->
                 new NotFoundException("Попробуйте другой идентификатор MPA")));
