@@ -4,9 +4,6 @@ import lombok.*;
 
 import javax.validation.constraints.*;
 import java.time.LocalDate;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -24,12 +21,4 @@ public class User {
     private String name;
     @PastOrPresent(message = "Дата рождения не может быть в будущем")
     private LocalDate birthday;
-
-    /*public User(int id, String email ,String name, String login, LocalDate birthday){
-        this.id = id;
-        this.login = login;
-        this.name = name;
-        this.email = email;
-        this.birthday = birthday;
-    }*/
 }

@@ -22,5 +22,5 @@ public interface FilmStorage {
 
     List<Integer> getLike(int idFilm);
 
-    List<Optional<Film>> getPopularFilms(int count);
+    List<Film> getPopularFilms(int count);
 }

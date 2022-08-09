@@ -21,7 +21,6 @@ import javax.validation.ConstraintViolationException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -358,7 +357,7 @@ public class FilmControllerTest extends FilmorateApplicationTests {
 
         filmController.addLikeFilm(film.getId(), user.getId());
 
-        List<Optional<Film>> likesFilm = filmController.getPopularFilm(10);
+        List<Film> likesFilm = filmController.getPopularFilm(10);
 
         assertEquals(likesFilm.size(), 1, "Лайк фильму не поставлен");
     }
@@ -458,7 +457,7 @@ public class FilmControllerTest extends FilmorateApplicationTests {
         filmController.addLikeFilm(film.getId(), user.getId());
         filmController.addLikeFilm(film1.getId(), user.getId());
 
-        List<Optional<Film>> popularFilm = filmController.getPopularFilm(2);
+        List<Film> popularFilm = filmController.getPopularFilm(2);
 
         assertEquals(popularFilm.size(), 2, "Количество не совпадает");
     }

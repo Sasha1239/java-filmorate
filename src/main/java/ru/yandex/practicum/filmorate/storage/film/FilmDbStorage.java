@@ -127,15 +127,17 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public List<Optional<Film>> getPopularFilms(int count) {
-        final String getPopularFilmsSql = "SELECT F.FILM_ID FROM FILM_LIKES FL " +
-                "RIGHT JOIN FILM F on F.FILM_ID = FL.FILM_ID " +
+    public List<Film> getPopularFilms(int count) {
+        final String getPopularFilmsSql = "SELECT * FROM FILM AS F " +
+                "LEFT JOIN FILM_GENRE FG ON F.FILM_ID = FG.FILM_ID " +
+                "LEFT JOIN MPA M ON M.MPA_RATING_ID = F.MPA_RATING " +
+                "LEFT JOIN GENRE G ON G.GENRE_ID = FG.GENRE_ID " +
+                "LEFT OUTER JOIN FILM_LIKES FL on F.FILM_ID = FL.FILM_ID " +
                 "GROUP BY F.FILM_ID " +
                 "ORDER BY COUNT(FL.FILM_ID) " +
                 "DESC LIMIT ?;";
 
-        List<Integer> idFilms = jdbcTemplate.queryForList(getPopularFilmsSql, Integer.class, count);
-        return idFilms.stream().map(this::getFilm).collect(Collectors.toList());
+        return jdbcTemplate.query(getPopularFilmsSql, this::makeFilm, count);
     }
 
     private List<Genre> removeGenreDuplicate(Film film) {

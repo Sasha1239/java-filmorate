@@ -61,7 +61,7 @@ public class FilmController {
 
     //Получение самых популярных фильмов по кол-ву лайков или получение первых 10 фильмов
     @GetMapping("/popular")
-    public List<Optional<Film>> getPopularFilm(@Positive @RequestParam(defaultValue = "10") int count){
+    public List<Film> getPopularFilm(@Positive @RequestParam(defaultValue = "10") int count){
         return filmService.getPopularFilm(count);
     }
 }

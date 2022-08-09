@@ -14,7 +14,6 @@ import java.sql.SQLException;
 import java.sql.Types;
 import java.time.LocalDate;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Component
 @Slf4j
@@ -28,9 +27,12 @@ public class UserDbStorage implements UserStorage {
     @Override
     //Добавление пользователя
     public User create(User user) {
+        final String createUserSql = "INSERT INTO USERS (EMAIL, LOGIN, USER_NAME, BIRTHDAY) " +
+                "VALUES (?, ?, ?, ?);";
+
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(connection -> {
-            PreparedStatement preparedStatement = connection.prepareStatement(UserSql.CREATE_USER,
+            PreparedStatement preparedStatement = connection.prepareStatement(createUserSql,
                     new String[]{"USER_ID"});
             preparedStatement.setString(1, user.getEmail());
             preparedStatement.setString(2, user.getLogin());
@@ -94,23 +96,23 @@ public class UserDbStorage implements UserStorage {
     //Получение друзей
     @Override
     public List<User> getFriends(int idUser) {
-        String sql = "SELECT U.* FROM FRIENDS F " +
+        String getFriendsSql = "SELECT U.* FROM FRIENDS F " +
                 "JOIN USERS U on F.FRIEND_ID = U.USER_ID " +
                 "WHERE F.USER_ID = ?;";
-        return jdbcTemplate.query(sql, this::makeUser, idUser);
+        return jdbcTemplate.query(getFriendsSql, this::makeUser, idUser);
     }
 
     //Получение общих друзей
     @Override
     public List<User> getCommonsFriend(int idUser, int idFriend) {
-        final String sql = "SELECT U.* FROM FRIENDS F " +
+        final String getCommonFriendSql = "SELECT U.* FROM FRIENDS F " +
                 "JOIN USERS U ON F.FRIEND_ID = U.USER_ID " +
                 "WHERE U.USER_ID = ? " +
                 "UNION " +
                 "SELECT U.* FROM FRIENDS F " +
                 "JOIN USERS U ON F.FRIEND_ID = U.USER_ID " +
                 "WHERE F.USER_ID = ?;";
-        return jdbcTemplate.query(sql, this::makeUser, idUser, idFriend);
+        return jdbcTemplate.query(getCommonFriendSql, this::makeUser, idUser, idFriend);
     }
 
     //Удаление из друзей

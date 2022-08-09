@@ -64,7 +64,7 @@ public class FilmService {
     }
 
     //Получение самых популярных фильмов по кол-ву лайков или получение первых 10 фильмов
-    public List<Optional<Film>> getPopularFilm(int count){
+    public List<Film> getPopularFilm(int count){
         return filmStorage.getPopularFilms(count);
     }
 
