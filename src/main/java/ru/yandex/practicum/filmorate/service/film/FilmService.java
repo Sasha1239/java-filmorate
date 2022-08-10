@@ -11,7 +11,7 @@ import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -33,7 +33,7 @@ public class FilmService {
     }
 
     //Обновление фильма
-    public Film update(Film film){
+    public Optional<Film> update(Film film){
         getFilm(film.getId());
         validateFilm(film);
         return filmStorage.update(film);
@@ -52,21 +52,20 @@ public class FilmService {
     //Пользователь ставит лайк фильму
     public void addLikeFilm(int idFilm, int idUser){
         validateFindUserId(idUser);
-        getFilm(idFilm).addLike(idUser);
+        getFilm(idFilm);
+        filmStorage.addLikeFilm(idFilm, idUser);
     }
 
     //Пользователь удаляет лайк
-    public void removeLikeFilm(int idUser, int idFilm){
+    public void removeLikeFilm(int idFilm, int idUser){
         getFilm(idFilm);
         validateFindUserId(idUser);
-        getFilm(idFilm).removeLike(idUser);
+        filmStorage.removeLikeFilm(idFilm, idUser);
     }
 
     //Получение самых популярных фильмов по кол-ву лайков или получение первых 10 фильмов
     public List<Film> getPopularFilm(int count){
-        List<Film> popularFilms = filmStorage.getAll().stream().sorted(((o1, o2) ->
-                o2.getLikesFilm().size() - o1.getLikesFilm().size())).limit(count).collect(Collectors.toList());
-        return popularFilms;
+        return filmStorage.getPopularFilms(count);
     }
 
     //Валидация пользователя
