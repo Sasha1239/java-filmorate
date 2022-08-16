@@ -319,6 +319,36 @@ public class FilmControllerTest extends FilmorateApplicationTests {
         assertEquals(filmList.get(0).getId(), film.getId(), "Фильмы не совпадают");
     }
 
+    //Удаление фильма по идентификатору
+    @Test
+    public void removeFilmId(){
+        Film film = new Film();
+        film.setName("Наименование фильма");
+        film.setDescription("Описание фильма");
+        film.setDuration(50);
+        film.setReleaseDate(LocalDate.of(1992, 12, 10));
+        film.setMpa(new Mpa(1, "G"));
+        film.setGenres(genres);
+        filmController.create(film);
+
+        filmController.removeFilm(film.getId());
+
+        List<Film> filmList = filmController.getAll();
+
+        assertEquals(filmList.size(), 0, "Фильм не удален");
+    }
+
+    //Удаление несуществующего фильма
+    @Test
+    public void removeUnknownFilmId(){
+        Throwable throwable = assertThrows(NotFoundException.class, () -> {
+            filmController.removeFilm(1);
+        });
+
+        assertEquals("Попробуйте другой идентификатор фильма", throwable.getMessage(),
+                "Текст ошибки валидации разный");
+    }
+
     //Получение неизвестного фильма по идентификатору
     @Test
     public void getUnknownFilmId() {
