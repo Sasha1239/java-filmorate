@@ -49,6 +49,12 @@ public class FilmService {
                new NotFoundException("Попробуйте другой идентификатор фильма"));
     }
 
+    //Удаление фильма по идентификатору
+    public void removeFilm(int idFilm){
+        getFilm(idFilm);
+        filmStorage.removeFilm(idFilm);
+    }
+
     //Пользователь ставит лайк фильму
     public void addLikeFilm(int idFilm, int idUser){
         validateFindUserId(idUser);

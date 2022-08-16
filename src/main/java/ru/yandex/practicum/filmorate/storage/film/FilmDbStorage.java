@@ -78,9 +78,7 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public List<Film> getAll() {
         final String getAllFilmSql = "SELECT * FROM FILM AS F " +
-                "LEFT JOIN FILM_GENRE FG ON F.FILM_ID = FG.FILM_ID " +
-                "LEFT JOIN MPA M ON M.MPA_RATING_ID = F.MPA_RATING " +
-                "LEFT JOIN GENRE G ON G.GENRE_ID = FG.GENRE_ID;";
+                "LEFT JOIN MPA M ON M.MPA_RATING_ID = F.MPA_RATING;";
 
         return jdbcTemplate.query(getAllFilmSql, this::makeFilm);
     }
@@ -133,7 +131,7 @@ public class FilmDbStorage implements FilmStorage {
                 "LEFT JOIN MPA M ON M.MPA_RATING_ID = F.MPA_RATING " +
                 "LEFT JOIN GENRE G ON G.GENRE_ID = FG.GENRE_ID " +
                 "LEFT OUTER JOIN FILM_LIKES FL on F.FILM_ID = FL.FILM_ID " +
-                "GROUP BY F.FILM_ID " +
+                "GROUP BY FL.USER_ID, F.FILM_ID, FG.GENRE_ID " +
                 "ORDER BY COUNT(FL.FILM_ID) " +
                 "DESC LIMIT ?;";
 
