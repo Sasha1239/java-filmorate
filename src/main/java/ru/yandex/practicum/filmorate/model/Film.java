@@ -7,7 +7,9 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -28,5 +30,5 @@ public class Film {
     private long duration;
     private Mpa mpa;
     private List<Genre> genres;
-    private Director director;
+    private Set<Director> directors;
 }

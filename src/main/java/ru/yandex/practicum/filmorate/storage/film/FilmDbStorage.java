@@ -5,6 +5,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exception.InvalidParamException;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.storage.director.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
@@ -23,7 +24,6 @@ import java.util.stream.Collectors;
 public class FilmDbStorage implements FilmStorage {
     private final JdbcTemplate jdbcTemplate;
     private final GenreStorage genreStorage;
-
     private final DirectorStorage directorStorage;
 
     public FilmDbStorage(JdbcTemplate jdbcTemplate, GenreStorage genreStorage, DirectorStorage directorStorage) {
@@ -57,8 +57,8 @@ public class FilmDbStorage implements FilmStorage {
             genreStorage.addGenreToFilm(filmId, genres);
         }
 
-        if (film.getDirector() != null) {
-            directorStorage.addDirectorToFilm(film.getId(), film.getDirector().getId());
+        if (film.getDirectors() != null) {
+            directorStorage.addDirectorToFilm(film.getId(), film.getDirectors());
         }
         return film;
     }
@@ -78,9 +78,10 @@ public class FilmDbStorage implements FilmStorage {
             genreStorage.removeGenreToFilm(film.getId());
             genreStorage.addGenreToFilm(film.getId(), genres);
         }
-
-        if (film.getDirector() != null) {
-            directorStorage.addDirectorToFilm(film.getId(), film.getDirector().getId());
+        directorStorage.removeDirectorToFilm(film.getId());
+        if (film.getDirectors() != null) {
+            directorStorage.addDirectorToFilm(film.getId(), film.getDirectors());
+        } else {
         }
         return getFilm(film.getId());
     }
@@ -151,6 +152,34 @@ public class FilmDbStorage implements FilmStorage {
         return jdbcTemplate.query(getPopularFilmsSql, this::makeFilm, count);
     }
 
+    @Override
+    public List<Film> getAllFilmOfDirector(int directorId, String sortBy) {
+        directorStorage.getDirectorById(directorId);
+        if (sortBy.equals("year")) {
+            String sql = "SELECT * " +
+                    "FROM FILM F " +
+                    "LEFT JOIN FILM_DIRECTOR FD on F.FILM_ID = FD.FILM_ID " +
+                    "LEFT JOIN MPA M on M.MPA_RATING_ID = F.MPA_RATING " +
+                    "LEFT JOIN FILM_GENRE FG on F.FILM_ID = FG.FILM_ID " +
+                    "WHERE FD.DIRECTOR_ID = ? " +
+                    "GROUP BY EXTRACT(YEAR from CAST(RELEASE_DATE AS DATE))";
+            return jdbcTemplate.query(sql, this::makeFilm, directorId);
+        } else if (sortBy.equals("likes")) {
+            String sql = "SELECT * " +
+                    "FROM FILM F " +
+                    "LEFT JOIN FILM_GENRE FG on F.FILM_ID = FG.FILM_ID " +
+                    "LEFT JOIN FILM_DIRECTOR FD on F.FILM_ID = FD.FILM_ID " +
+                    "LEFT JOIN MPA M on M.MPA_RATING_ID = F.MPA_RATING " +
+                    "LEFT JOIN FILM_LIKES FL on F.FILM_ID = FL.FILM_ID " +
+                    "WHERE FD.DIRECTOR_ID = ? " +
+                    "GROUP BY F.FILM_ID " +
+                    "ORDER BY COUNT(FL.FILM_ID)";
+            return jdbcTemplate.query(sql, this::makeFilm, directorId);
+        } else {
+            throw new InvalidParamException("Введен неверный параметр сотртировки");
+        }
+    }
+
     private List<Genre> removeGenreDuplicate(Film film) {
         film.setGenres(film.getGenres().stream().distinct().collect(Collectors.toList()));
         return film.getGenres();
@@ -165,7 +194,8 @@ public class FilmDbStorage implements FilmStorage {
         Mpa mpaRatingFilm = new Mpa(resultSet.getInt("MPA_RATING_ID"),
                 resultSet.getString("MPA_NAME"));
         List<Genre> genres = genreStorage.getGenresFilm(idFilm);
-        Director director = directorStorage.getDirectorById(resultSet.getLong("director_id"));
-        return new Film(idFilm, nameFilm, descriptionFilm, releaseDateFilm, durationFilm, mpaRatingFilm, genres, director);
+        Set<Director> directorList = new HashSet<>(directorStorage
+                .getAllDirectorsOfFilm(resultSet.getInt("film_id")));
+        return new Film(idFilm, nameFilm, descriptionFilm, releaseDateFilm, durationFilm, mpaRatingFilm, genres, directorList);
     }
 }

@@ -74,6 +74,10 @@ public class FilmService {
         return filmStorage.getPopularFilms(count);
     }
 
+    public List<Film> getAllFilmsOfDirector (int directorId, String sortBy) {
+        return filmStorage.getAllFilmOfDirector(directorId, sortBy);
+    }
+
     //Валидация пользователя
     private void validateFindUserId(int idUser){
         userStorage.getUser(idUser).orElseThrow(() ->

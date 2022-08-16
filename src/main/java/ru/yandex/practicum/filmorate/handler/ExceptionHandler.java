@@ -5,12 +5,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import ru.yandex.practicum.filmorate.exception.InvalidParamException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 
 import javax.validation.ConstraintViolationException;
 import java.util.Map;
-import java.util.NoSuchElementException;
 
 @RestControllerAdvice
 @Slf4j
@@ -50,4 +50,10 @@ public class ExceptionHandler {
         return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
+    @org.springframework.web.bind.annotation.ExceptionHandler
+    @ResponseStatus (HttpStatus.BAD_REQUEST)
+    public Map<String, String> handleInvalidParamException (InvalidParamException e){
+        log.warn("400 {}", e.getMessage());
+        return Map.of("error", "Ошибка в параметрах", "errorMessage", e.getMessage());
+    }
 }
