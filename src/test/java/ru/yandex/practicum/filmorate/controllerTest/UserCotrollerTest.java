@@ -64,7 +64,7 @@ public class UserCotrollerTest extends FilmorateApplicationTests {
         userController.create(user);
 
         String validatorMessage = validator.validate(user).iterator().next().getMessage();
-        assertEquals("Неправильно написали почту",
+        assertEquals("Почта не может быть пустой или содержать пробельные символы",
                 validatorMessage, "Текст ошибки валидации разный");
     }
 
