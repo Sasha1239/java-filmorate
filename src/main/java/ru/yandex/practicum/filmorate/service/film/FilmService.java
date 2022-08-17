@@ -6,10 +6,13 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.director.DirectorService;
+import ru.yandex.practicum.filmorate.storage.director.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,11 +22,13 @@ public class FilmService {
     private static final LocalDate MAX_EARLY_DATE_FILM = LocalDate.of(1895, 12, 28);
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
+    private final DirectorService directorService;
 
     @Autowired
-    public FilmService(FilmStorage filmStorage, UserStorage userStorage){
+    public FilmService(FilmStorage filmStorage, UserStorage userStorage, DirectorService directorService){
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
+        this.directorService = directorService;
     }
 
     //Добавление фильма
@@ -72,6 +77,18 @@ public class FilmService {
     //Получение самых популярных фильмов по кол-ву лайков или получение первых 10 фильмов
     public List<Film> getPopularFilm(int count){
         return filmStorage.getPopularFilms(count);
+    }
+
+    public List<Film> getAllFilmsOfDirector (int directorId, String sortBy) {
+        List<Film> films = new ArrayList<>();
+        try {
+            directorService.getDirectorById(directorId);
+            films = filmStorage.getAllFilmOfDirector(directorId, sortBy);
+        } catch (ValidationException e){
+            log.error("ValidationException", e);
+            throw e;
+        }
+        return films;
     }
 
     //Валидация пользователя

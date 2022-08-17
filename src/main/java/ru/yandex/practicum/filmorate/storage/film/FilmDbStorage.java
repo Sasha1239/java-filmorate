@@ -5,11 +5,14 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.model.Director;
+import ru.yandex.practicum.filmorate.storage.director.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import java.sql.*;
 import java.sql.Date;
 import java.time.LocalDate;
@@ -21,10 +24,12 @@ import java.util.stream.Collectors;
 public class FilmDbStorage implements FilmStorage {
     private final JdbcTemplate jdbcTemplate;
     private final GenreStorage genreStorage;
+    private final DirectorStorage directorStorage;
 
-    public FilmDbStorage(JdbcTemplate jdbcTemplate, GenreStorage genreStorage) {
+    public FilmDbStorage(JdbcTemplate jdbcTemplate, GenreStorage genreStorage, DirectorStorage directorStorage) {
         this.jdbcTemplate = jdbcTemplate;
         this.genreStorage = genreStorage;
+        this.directorStorage = directorStorage;
     }
 
     //Добавление фильма
@@ -52,6 +57,9 @@ public class FilmDbStorage implements FilmStorage {
             genreStorage.addGenreToFilm(filmId, genres);
         }
 
+        if (film.getDirectors() != null) {
+            directorStorage.addDirectorToFilm(film.getId(), film.getDirectors());
+        }
         return film;
     }
 
@@ -65,12 +73,15 @@ public class FilmDbStorage implements FilmStorage {
         jdbcTemplate.update(updateFilmSql, film.getName(), film.getDescription(),
                 film.getReleaseDate(), film.getDuration(), film.getMpa().getId(), film.getId());
 
-        if (film.getGenres() != null){
+        if (film.getGenres() != null) {
             List<Genre> genres = removeGenreDuplicate(film);
             genreStorage.removeGenreToFilm(film.getId());
             genreStorage.addGenreToFilm(film.getId(), genres);
         }
-
+        directorStorage.removeDirectorToFilm(film.getId());
+        if (film.getDirectors() != null) {
+            directorStorage.addDirectorToFilm(film.getId(), film.getDirectors());
+        }
         return getFilm(film.getId());
     }
 
@@ -91,6 +102,8 @@ public class FilmDbStorage implements FilmStorage {
                 "LEFT JOIN MPA M ON M.MPA_RATING_ID = F.MPA_RATING " +
                 "LEFT JOIN GENRE G ON G.GENRE_ID = FG.GENRE_ID " +
                 "LEFT JOIN FILM_LIKES FL on F.FILM_ID = FL.FILM_ID " +
+                "LEFT JOIN FILM_DIRECTOR FD on F.FILM_ID = FD.FILM_ID " +
+                "LEFT JOIN DIRECTORS D on FD.DIRECTOR_ID = D.DIRECTOR_ID " +
                 "WHERE F.FILM_ID = ?;";
 
         return jdbcTemplate.query(getFilmSql, this::makeFilm, idFilm).stream().findAny();
@@ -138,6 +151,33 @@ public class FilmDbStorage implements FilmStorage {
         return jdbcTemplate.query(getPopularFilmsSql, this::makeFilm, count);
     }
 
+    @Override
+    public List<Film> getAllFilmOfDirector(int directorId, String sortBy) throws ValidationException {
+        if (sortBy.equals("year")) {
+            String sql = "SELECT * " +
+                    "FROM FILM F " +
+                    "LEFT JOIN FILM_DIRECTOR FD on F.FILM_ID = FD.FILM_ID " +
+                    "LEFT JOIN MPA M on M.MPA_RATING_ID = F.MPA_RATING " +
+                    "LEFT JOIN FILM_GENRE FG on F.FILM_ID = FG.FILM_ID " +
+                    "WHERE FD.DIRECTOR_ID = ? " +
+                    "GROUP BY EXTRACT(YEAR from CAST(RELEASE_DATE AS DATE))";
+            return jdbcTemplate.query(sql, this::makeFilm, directorId);
+        } else if (sortBy.equals("likes")) {
+            String sql = "SELECT * " +
+                    "FROM FILM F " +
+                    "LEFT JOIN FILM_GENRE FG on F.FILM_ID = FG.FILM_ID " +
+                    "LEFT JOIN FILM_DIRECTOR FD on F.FILM_ID = FD.FILM_ID " +
+                    "LEFT JOIN MPA M on M.MPA_RATING_ID = F.MPA_RATING " +
+                    "LEFT JOIN FILM_LIKES FL on F.FILM_ID = FL.FILM_ID " +
+                    "WHERE FD.DIRECTOR_ID = ? " +
+                    "GROUP BY F.FILM_ID " +
+                    "ORDER BY COUNT(FL.FILM_ID)";
+            return jdbcTemplate.query(sql, this::makeFilm, directorId);
+        } else {
+            throw new ValidationException("Неверно указан параметр запроса");
+        }
+    }
+
     private List<Genre> removeGenreDuplicate(Film film) {
         film.setGenres(film.getGenres().stream().distinct().collect(Collectors.toList()));
         return film.getGenres();
@@ -152,6 +192,8 @@ public class FilmDbStorage implements FilmStorage {
         Mpa mpaRatingFilm = new Mpa(resultSet.getInt("MPA_RATING_ID"),
                 resultSet.getString("MPA_NAME"));
         List<Genre> genres = genreStorage.getGenresFilm(idFilm);
-        return new Film(idFilm, nameFilm, descriptionFilm, releaseDateFilm, durationFilm, mpaRatingFilm,genres);
+        Set<Director> directorList = new HashSet<>(directorStorage
+                .getAllDirectorsOfFilm(resultSet.getInt("film_id")));
+        return new Film(idFilm, nameFilm, descriptionFilm, releaseDateFilm, durationFilm, mpaRatingFilm, genres, directorList);
     }
 }

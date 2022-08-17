@@ -13,7 +13,7 @@ import java.time.LocalDate;
 @EqualsAndHashCode
 public class User {
     private int id;
-    @NotBlank(message = "Почта не может быть пустой или содержать пробельные символы")
+    @NotBlank(message = "Неправильно написали почту")
     @Email(message = "Неправильно написали почту")
     private String email;
     @NotBlank(message = "Логин не может быть пустой или содержать побельные символы")
