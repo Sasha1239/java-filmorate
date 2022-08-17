@@ -18,12 +18,8 @@ public class DirectorService {
     private final DirectorStorage directorStorage;
 
     public Director getDirectorById (long id) {
-        Optional<Director> director = directorStorage.getDirectorById(id);
-        if (director.isPresent() && id > 0){
-            return director.get();
-        } else {
-            throw new NotFoundException("Режисер не найден");
-        }
+        return directorStorage.getDirectorById(id)
+                .orElseThrow(() -> new NotFoundException("Попробуйте другой идентификатор режисера"));
     }
 
     public List<Director> getDirectorList() {
