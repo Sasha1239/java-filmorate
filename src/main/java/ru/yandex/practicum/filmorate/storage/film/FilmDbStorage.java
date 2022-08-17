@@ -5,7 +5,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.exception.InvalidParamException;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.storage.director.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
@@ -13,6 +12,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import java.sql.*;
 import java.sql.Date;
 import java.time.LocalDate;
@@ -82,7 +82,6 @@ public class FilmDbStorage implements FilmStorage {
         if (film.getDirectors() != null) {
             directorStorage.addDirectorToFilm(film.getId(), film.getDirectors());
         }
-        Director director = new Director(1, "2");
         return getFilm(film.getId());
     }
 
@@ -153,7 +152,7 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> getAllFilmOfDirector(int directorId, String sortBy) {
+    public List<Film> getAllFilmOfDirector(int directorId, String sortBy) throws ValidationException {
         if (sortBy.equals("year")) {
             String sql = "SELECT * " +
                     "FROM FILM F " +
@@ -175,7 +174,7 @@ public class FilmDbStorage implements FilmStorage {
                     "ORDER BY COUNT(FL.FILM_ID)";
             return jdbcTemplate.query(sql, this::makeFilm, directorId);
         } else {
-            throw new InvalidParamException("Введен неверный параметр сотртировки");
+            throw new ValidationException("Неверно указан параметр запроса");
         }
     }
 

@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.storage.film;
 
 import ru.yandex.practicum.filmorate.model.Film;
 
+import javax.xml.bind.ValidationException;
 import java.util.List;
 import java.util.Optional;
 

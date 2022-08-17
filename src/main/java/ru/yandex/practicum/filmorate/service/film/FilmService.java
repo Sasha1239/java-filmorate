@@ -12,6 +12,7 @@ import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -79,8 +80,15 @@ public class FilmService {
     }
 
     public List<Film> getAllFilmsOfDirector (int directorId, String sortBy) {
-        directorService.getDirectorById(directorId);
-        return filmStorage.getAllFilmOfDirector(directorId, sortBy);
+        List<Film> films = new ArrayList<>();
+        try {
+            directorService.getDirectorById(directorId);
+            films = filmStorage.getAllFilmOfDirector(directorId, sortBy);
+        } catch (ValidationException e){
+            log.error("ValidationException", e);
+            throw e;
+        }
+        return films;
     }
 
     //Валидация пользователя
