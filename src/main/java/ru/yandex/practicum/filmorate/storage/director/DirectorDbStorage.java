@@ -8,12 +8,14 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Director;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 @AllArgsConstructor
@@ -23,22 +25,9 @@ public class DirectorDbStorage implements DirectorStorage {
     private final JdbcTemplate jdbcTemplate;
 
     @Override
-    public Director getDirectorById(long id) {
-        if (id>0){
-            String sql = "SELECT * FROM DIRECTORS WHERE DIRECTOR_ID = ?";
-            SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet(sql, id);
-            if (sqlRowSet.next()) {
-                Director director = Director.builder()
-                        .id(sqlRowSet.getLong("director_id"))
-                        .name(sqlRowSet.getString("director_name"))
-                        .build();
-                return director;
-            } else {
-                throw new NotFoundException("Режисер не найден");
-            }
-        } else {
-            return Director.builder().id(0).name("Не указан").build();
-        }
+    public Optional<Director> getDirectorById(long id) {
+        String sql = "SELECT * FROM DIRECTORS WHERE DIRECTOR_ID = ?";
+        return jdbcTemplate.query(sql, this::mapToRowDirector, id).stream().findAny();
     }
 
     @Override
@@ -51,7 +40,7 @@ public class DirectorDbStorage implements DirectorStorage {
     public void addDirectorToFilm(long film_id, Set<Director> directors) {
         String sql = "MERGE INTO FILM_DIRECTOR (DIRECTOR_ID, FILM_ID) " +
                 "VALUES (?,?)";
-        for (Director director: directors){
+        for (Director director : directors) {
             jdbcTemplate.update(sql, director.getId(), film_id);
         }
     }

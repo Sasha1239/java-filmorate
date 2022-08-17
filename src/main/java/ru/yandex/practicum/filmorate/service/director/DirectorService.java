@@ -3,23 +3,27 @@ package ru.yandex.practicum.filmorate.service.director;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.storage.director.DirectorStorage;
 
-import javax.validation.Valid;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @AllArgsConstructor
 @Validated
 public class DirectorService {
 
-    DirectorStorage directorStorage;
+    private final DirectorStorage directorStorage;
 
-    public Director getDirectorById (int id) {
-        return directorStorage.getDirectorById(id);
+    public Director getDirectorById (long id) {
+        Optional<Director> director = directorStorage.getDirectorById(id);
+        if (director.isPresent() && id > 0){
+            return director.get();
+        } else {
+            throw new NotFoundException("Режисер не найден");
+        }
     }
 
     public List<Director> getDirectorList() {
@@ -31,6 +35,7 @@ public class DirectorService {
     }
 
     public Director updateDirector (Director director){
+        getDirectorById(director.getId());
         directorStorage.getDirectorById(director.getId());
         return directorStorage.updateDirector(director);
     }

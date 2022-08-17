@@ -81,8 +81,8 @@ public class FilmDbStorage implements FilmStorage {
         directorStorage.removeDirectorToFilm(film.getId());
         if (film.getDirectors() != null) {
             directorStorage.addDirectorToFilm(film.getId(), film.getDirectors());
-        } else {
         }
+        Director director = new Director(1, "2");
         return getFilm(film.getId());
     }
 
@@ -154,7 +154,6 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public List<Film> getAllFilmOfDirector(int directorId, String sortBy) {
-        directorStorage.getDirectorById(directorId);
         if (sortBy.equals("year")) {
             String sql = "SELECT * " +
                     "FROM FILM F " +
