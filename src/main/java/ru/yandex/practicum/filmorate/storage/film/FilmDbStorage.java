@@ -138,7 +138,7 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> getPopularFilms(int count, int genreId, int year) {
+    public List<Film> getPopularFilms(int count, Integer genreId, Integer year) {
         StringBuilder getPopularFilmsSql = new StringBuilder();
         getPopularFilmsSql.append(
                 "SELECT * "+
@@ -148,11 +148,11 @@ public class FilmDbStorage implements FilmStorage {
                         "(SELECT film_id, COUNT(user_id) as rate " +
                         "FROM FILM_LIKES " +
                         "GROUP BY film_id) fl ON (fl.film_id = f.film_id) ");
-       if (genreId != 0) {
+       if (genreId != null) {
            getPopularFilmsSql.append(
                 "JOIN FILM_GENRE g ON (g.film_id = f.film_id AND g.genre_id = " + genreId + ") ");
        }
-        if (year != 0) {
+        if (year != null) {
             getPopularFilmsSql.append(
                 "WHERE EXTRACT(YEAR from CAST(f.release_date AS DATE)) = "+ year +" ");
         }

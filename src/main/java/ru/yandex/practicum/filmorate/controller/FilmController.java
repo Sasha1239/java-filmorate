@@ -71,8 +71,8 @@ public class FilmController {
     // или получение первых 10 фильмов
     @GetMapping("/popular")
     public List<Film> getPopularFilm(@Positive @RequestParam(defaultValue = "10") int count,
-                                      @RequestParam(defaultValue = "0") int genreId,
-                                      @RequestParam(defaultValue = "0") int year) {
+                                     @RequestParam(required = false) Integer genreId,
+                                     @RequestParam(required = false) Integer year) {
 
         log.info("getPopularFilm (GET /films/popular?count={}&genreId={}&year={}): Получить список из первых {} " +
                 "фильмов по количеству лайков c фильтрацией по жанру (если 0, то без фильтрации по жанру) {} " +

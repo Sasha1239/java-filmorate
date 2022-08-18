@@ -77,22 +77,17 @@ public class FilmService {
         filmStorage.removeLikeFilm(idFilm, idUser);
     }
 
-    //Получение самых популярных фильмов по кол-ву лайков или получение первых 10 фильмов
-/*    public List<Film> getPopularFilm(int count){
-        return filmStorage.getPopularFilms(count);
-    }
-*/
 
-//Получение самых популярных фильмов по кол-ву лайков или получение первых 10 фильмов
-    public List<Film> getPopularFilm(int count, int genreId, int year){
+    //Получение самых популярных фильмов по кол-ву лайков или получение первых 10 фильмов
+    public List<Film> getPopularFilm(int count, Integer genreId, Integer year){
         // проверим валидность присланного жанра
-        if (genreId != 0) {
+        if (genreId != null) {
             genreStorage.getGenre(genreId).orElseThrow(() ->
                     new NotFoundException("Попробуйте задать другой жанр для фильтрации популярных фильмов"));
         }
         // проверим валидность присланного года
-        if (year < 0) {
-            new ValidationException ("Год не может быть отрицательным");
+        if (year != null && year < 0) {
+            new NotFoundException ("Год не может быть отрицательным");
         }
         return filmStorage.getPopularFilms(count, genreId, year);
     }
