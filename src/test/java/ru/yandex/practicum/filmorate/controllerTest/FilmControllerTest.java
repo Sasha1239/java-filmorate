@@ -387,7 +387,7 @@ public class FilmControllerTest extends FilmorateApplicationTests {
 
         filmController.addLikeFilm(film.getId(), user.getId());
 
-        List<Film> likesFilm = filmController.getPopularFilm(10);
+        List<Film> likesFilm = filmController.getPopularFilm(10, 0, 0);
 
         assertEquals(likesFilm.size(), 1, "Лайк фильму не поставлен");
     }
@@ -487,7 +487,7 @@ public class FilmControllerTest extends FilmorateApplicationTests {
         filmController.addLikeFilm(film.getId(), user.getId());
         filmController.addLikeFilm(film1.getId(), user.getId());
 
-        List<Film> popularFilm = filmController.getPopularFilm(2);
+        List<Film> popularFilm = filmController.getPopularFilm(2,0,0);
 
         assertEquals(popularFilm.size(), 2, "Количество не совпадает");
     }
