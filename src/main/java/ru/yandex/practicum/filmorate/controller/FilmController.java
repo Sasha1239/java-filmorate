@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -8,10 +9,11 @@ import ru.yandex.practicum.filmorate.service.film.FilmService;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Positive;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
-
+@Slf4j
 @RestController
 @RequestMapping("/films")
 @Validated
@@ -65,10 +67,19 @@ public class FilmController {
         filmService.removeLikeFilm(id, userId);
     }
 
-    //Получение самых популярных фильмов по кол-ву лайков или получение первых 10 фильмов
+    //Получение самых популярных фильмов по кол-ву лайков, отфильтрованных по жанру и году
+    // или получение первых 10 фильмов
     @GetMapping("/popular")
-    public List<Film> getPopularFilm(@Positive @RequestParam(defaultValue = "10") int count) {
-        return filmService.getPopularFilm(count);
+    public List<Film> getPopularFilm(@Positive @RequestParam(defaultValue = "10") int count,
+                                      @RequestParam(defaultValue = "0") int genreId,
+                                      @RequestParam(defaultValue = "0") int year) {
+
+        log.info("getPopularFilm (GET /films/popular?count={}&genreId={}&year={}): Получить список из первых {} " +
+                "фильмов по количеству лайков c фильтрацией по жанру (если 0, то без фильтрации по жанру) {} " +
+                "и по году (если 0, то без фильтрации по жанру) {}", count, genreId, year, count, genreId, year);
+        List<Film> films = filmService.getPopularFilm(count, genreId, year);
+        log.info("getPopularFilm (GET /films/popular): Результат = {}", films);
+        return films;
     }
 
     @GetMapping("/director/{directorId}")

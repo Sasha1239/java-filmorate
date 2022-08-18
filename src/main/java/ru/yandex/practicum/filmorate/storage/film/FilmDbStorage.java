@@ -138,17 +138,28 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> getPopularFilms(int count) {
-        final String getPopularFilmsSql = "SELECT * FROM FILM AS F " +
-                "LEFT JOIN FILM_GENRE FG ON F.FILM_ID = FG.FILM_ID " +
-                "LEFT JOIN MPA M ON M.MPA_RATING_ID = F.MPA_RATING " +
-                "LEFT JOIN GENRE G ON G.GENRE_ID = FG.GENRE_ID " +
-                "LEFT OUTER JOIN FILM_LIKES FL on F.FILM_ID = FL.FILM_ID " +
-                "GROUP BY FL.USER_ID, F.FILM_ID, FG.GENRE_ID " +
-                "ORDER BY COUNT(FL.FILM_ID) " +
-                "DESC LIMIT ?;";
-
-        return jdbcTemplate.query(getPopularFilmsSql, this::makeFilm, count);
+    public List<Film> getPopularFilms(int count, int genreId, int year) {
+        StringBuilder getPopularFilmsSql = new StringBuilder();
+        getPopularFilmsSql.append(
+                "SELECT * "+
+                "FROM FILM f " +
+                "JOIN MPA m ON (m.mpa_rating_id = f.mpa_rating) " +
+                "LEFT JOIN " +
+                        "(SELECT film_id, COUNT(user_id) as rate " +
+                        "FROM FILM_LIKES " +
+                        "GROUP BY film_id) fl ON (fl.film_id = f.film_id) ");
+       if (genreId != 0) {
+           getPopularFilmsSql.append(
+                "JOIN FILM_GENRE g ON (g.film_id = f.film_id AND g.genre_id = " + genreId + ") ");
+       }
+        if (year != 0) {
+            getPopularFilmsSql.append(
+                "WHERE EXTRACT(YEAR from CAST(f.release_date AS DATE)) = "+ year +" ");
+        }
+        getPopularFilmsSql.append(
+                "ORDER BY fl.rate DESC " +
+                "LIMIT ?");
+        return jdbcTemplate.query(getPopularFilmsSql.toString(), this::makeFilm, count);
     }
 
     @Override
