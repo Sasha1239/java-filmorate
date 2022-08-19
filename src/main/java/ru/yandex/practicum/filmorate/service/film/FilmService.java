@@ -9,6 +9,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.director.DirectorService;
 import ru.yandex.practicum.filmorate.storage.director.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.time.LocalDate;
@@ -22,13 +23,15 @@ public class FilmService {
     private static final LocalDate MAX_EARLY_DATE_FILM = LocalDate.of(1895, 12, 28);
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
+    private final GenreStorage genreStorage;
     private final DirectorService directorService;
 
     @Autowired
-    public FilmService(FilmStorage filmStorage, UserStorage userStorage, DirectorService directorService){
+    public FilmService(FilmStorage filmStorage, UserStorage userStorage, DirectorService directorService, GenreStorage genreStorage){
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
         this.directorService = directorService;
+        this.genreStorage = genreStorage;
     }
 
     //Добавление фильма
@@ -74,9 +77,19 @@ public class FilmService {
         filmStorage.removeLikeFilm(idFilm, idUser);
     }
 
+
     //Получение самых популярных фильмов по кол-ву лайков или получение первых 10 фильмов
-    public List<Film> getPopularFilm(int count){
-        return filmStorage.getPopularFilms(count);
+    public List<Film> getPopularFilm(int count, Integer genreId, Integer year){
+        // проверим валидность присланного жанра
+        if (genreId != null) {
+            genreStorage.getGenre(genreId).orElseThrow(() ->
+                    new NotFoundException("Попробуйте задать другой жанр для фильтрации популярных фильмов"));
+        }
+        // проверим валидность присланного года
+        if (year != null && year < 0) {
+            new NotFoundException ("Год не может быть отрицательным");
+        }
+        return filmStorage.getPopularFilms(count, genreId, year);
     }
 
     public List<Film> getAllFilmsOfDirector (int directorId, String sortBy) {
