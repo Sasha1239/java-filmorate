@@ -196,4 +196,11 @@ public class FilmDbStorage implements FilmStorage {
                 .getAllDirectorsOfFilm(resultSet.getInt("film_id")));
         return new Film(idFilm, nameFilm, descriptionFilm, releaseDateFilm, durationFilm, mpaRatingFilm, genres, directorList);
     }
+
+
+    public List<Integer> getUserLikedFilms(int idUser) {
+        return jdbcTemplate.query("SELECT film_id FROM film_likes WHERE user_id = ?",
+                (resultSet, rowNum) -> resultSet.getInt("film_id"), idUser);
+    }
+
 }
