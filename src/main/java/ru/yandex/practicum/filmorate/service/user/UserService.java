@@ -97,15 +97,15 @@ public class UserService {
     }
 
     public List<Film> getRecommendations(int idUser) {
-        // check that user is found
+        // проверить наличие пользователя
         getUser(idUser);
-        // get liked films mapped by users
+        // собрать фильмы, которые понравились пользователям
         HashMap<Integer, List<Integer>> userLikedFilms = new HashMap<>();
         List<User> users = getAll();
         for (User user : users) {
             userLikedFilms.put(user.getId(), filmStorage.getUserLikedFilms(user.getId()));
         }
-        // find other nearest users by likes
+        // найти пользователей, с которыми максимальное пересечение
         long maxIntersection = 0;
         List<Integer> nearestUserIds = new ArrayList<>();
         List<Integer> filmListIds = userLikedFilms.get(idUser);
@@ -124,7 +124,7 @@ public class UserService {
                 nearestUserIds.add(entry.getKey());
             }
         }
-        // return recommendations
+        // вернуть рекомендованные фильмы
         return nearestUserIds.stream()
                 .map(userLikedFilms::get)
                 .flatMap(Collection::stream)
