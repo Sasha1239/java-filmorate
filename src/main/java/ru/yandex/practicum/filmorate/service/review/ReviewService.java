@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.service.review;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.NotAcceptableStatusException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Review;
@@ -17,14 +16,14 @@ public class ReviewService {
     private final ReviewStorage reviewStorage;
 
     public Review createReview(Review review) {
-        if (review.getUserId() == null || review.getFilmId() == null){
+        if (review.getUserId() == null || review.getFilmId() == null) {
             throw new ValidationException("Неверный запрос, проверьте идентификаторы фильма и пользователя");
         }
         return reviewStorage.createReview(review);
     }
 
     public Review updateReview(Review review) {
-        if (review.getUserId() == null || review.getFilmId() == null){
+        if (review.getUserId() == null || review.getFilmId() == null) {
             throw new ValidationException("Неверный запрос, проверьте идентификаторы фильма и пользователя");
         }
         return reviewStorage.updateReview(review);
@@ -40,5 +39,17 @@ public class ReviewService {
 
     public List<Review> getReviews() {
         return reviewStorage.getReviews();
+    }
+
+    public List<Review> getReviewsOfFilm(int filmId, int count) {
+        return reviewStorage.getReviewsOfFilm(filmId, count);
+    }
+
+    public void addLikeToReview(int userId, int reviewId) {
+        reviewStorage.addLikeToReview(reviewId, userId);
+    }
+
+    public void addDislikeToReview(int userId, int reviewId) {
+        reviewStorage.addDislikeToReview(reviewId, userId);
     }
 }

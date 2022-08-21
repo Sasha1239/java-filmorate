@@ -6,17 +6,18 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Review;
-import ru.yandex.practicum.filmorate.service.film.FilmService;
+import ru.yandex.practicum.filmorate.model.ReviewLike;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @AllArgsConstructor
 @Component
@@ -73,23 +74,70 @@ public class ReviewDbStorage implements ReviewStorage {
     @Override
     public List<Review> getReviews() {
         String sql = "SELECT * FROM REVIEW";
-        return jdbcTemplate.query(sql, this::mapToRowReview);
+        return jdbcTemplate.query(sql, this::mapToRowReview).stream()
+                .sorted(Comparator.comparingInt(Review::getUseful).reversed())
+                .collect(Collectors.toList());
     }
 
     @Override
-    public void addLikeToReview (int reviewId, int userId) {
-        String sql = "INSERT INTO REVIEW_LIKE (REVIEW_ID, USER_ID, IS_USEFUL)" +
-                "VALUES ( ?, ?, ? ) ";
-        jdbcTemplate.update(sql);
+    public List<Review> getReviewsOfFilm(int filmId, int count) {
+        String sql = "SELECT * " +
+                "FROM REVIEW " +
+                "LEFT JOIN FILM F on F.FILM_ID = REVIEW.FILM_ID " +
+                "WHERE F.FILM_ID = ? " +
+                "LIMIT ?";
+        return jdbcTemplate.query(sql, this::mapToRowReview, filmId, count).stream()
+                .sorted(Comparator.comparingInt(Review::getUseful).reversed())
+                .collect(Collectors.toList());
     }
 
-    private Review mapToRowReview(ResultSet rs, int rowNum) throws SQLException {
+    @Override
+    public void addLikeToReview(int reviewId, int userId) {
+        String sql = "INSERT INTO REVIEW_LIKE (REVIEW_ID, USER_ID, IS_USEFUL)" +
+                "VALUES ( ?, ?, ? ) ";
+        jdbcTemplate.update(sql, reviewId, userId, true);
+    }
+
+    @Override
+    public void addDislikeToReview(int reviewId, int userId) {
+        String sql = "INSERT INTO REVIEW_LIKE (REVIEW_ID, USER_ID, IS_USEFUL)" +
+                "VALUES ( ?, ?, ? ) ";
+        jdbcTemplate.update(sql, reviewId, userId, false);
+    }
+
+    @Override
+    public int getUsefulOfReview(int reviewId) {
+        int useful = 0;
+        String sql = "SELECT * " +
+                "FROM REVIEW_LIKE " +
+                "WHERE REVIEW_ID = ?";
+        List<ReviewLike> reviewLikeList = jdbcTemplate.query(sql, this::mapToRowReviewLike, reviewId);
+        for (ReviewLike reviewLike: reviewLikeList){
+            if (reviewLike.isUseful()){
+                useful+=1;
+            } else {
+                useful-=1;
+            }
+        }
+        return useful;
+    }
+
+        private Review mapToRowReview(ResultSet rs, int rowNum) throws SQLException {
         return Review.builder()
                 .reviewId(rs.getInt("review_id"))
                 .content(rs.getString("content"))
                 .userId(rs.getInt("user_id"))
                 .filmId(rs.getInt("film_id"))
                 .isPositive(rs.getBoolean("is_positive"))
+                .useful(getUsefulOfReview(rs.getInt("review_id")))
+                .build();
+    }
+
+    private ReviewLike mapToRowReviewLike(ResultSet rs, int rowNum) throws SQLException {
+        return ReviewLike.builder()
+                .reviewId(rs.getInt("review_id"))
+                .userId(rs.getInt("user_id"))
+                .isUseful(rs.getBoolean("is_useful"))
                 .build();
     }
 }

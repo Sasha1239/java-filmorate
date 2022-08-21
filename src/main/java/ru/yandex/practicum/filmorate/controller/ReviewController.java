@@ -35,7 +35,22 @@ public class ReviewController {
     }
 
     @GetMapping
-    public List<Review> getReviews() {
-        return reviewService.getReviews();
+    public List<Review> getReviews(@RequestParam (defaultValue = "0") int filmId,
+                                   @RequestParam (defaultValue = "10") int count) {
+        if (filmId == 0) {
+            return reviewService.getReviews();
+        } else {
+            return reviewService.getReviewsOfFilm(filmId, count);
+        }
+    }
+
+    @PutMapping (value = "/{reviewId}/like/{userId}")
+    public void addLikeToReview(@PathVariable int reviewId, @PathVariable int userId) {
+        reviewService.addLikeToReview(userId, reviewId);
+    }
+
+    @PutMapping(value = "/{reviewId}/dislike/{userId}")
+    public void addDislikeToReview(@PathVariable int reviewId, @PathVariable int userId) {
+        reviewService.addDislikeToReview(userId, reviewId);
     }
 }

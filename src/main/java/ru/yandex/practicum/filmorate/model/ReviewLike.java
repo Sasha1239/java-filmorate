@@ -7,9 +7,10 @@ import lombok.*;
 @AllArgsConstructor
 @EqualsAndHashCode
 @ToString
+@Builder
 public class ReviewLike {
 
-    int userId;
-    int reviewId;
-    int isUseful;
+    private int userId;
+    private int reviewId;
+    private boolean isUseful;
 }

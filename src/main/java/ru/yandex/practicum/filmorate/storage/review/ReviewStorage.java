@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.storage.review;
 
-import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Review;
 
 import java.util.List;
@@ -18,5 +17,11 @@ public interface ReviewStorage {
 
     public List<Review> getReviews();
 
-    public void addLikeToReview (int reviewId, int userId);
+    public void addLikeToReview(int reviewId, int userId);
+
+    public void addDislikeToReview(int reviewId, int userId);
+
+    public List<Review> getReviewsOfFilm(int filmId, int count);
+
+    public int getUsefulOfReview(int reviewId);
 }
