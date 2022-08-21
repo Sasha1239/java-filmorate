@@ -9,7 +9,6 @@ import ru.yandex.practicum.filmorate.service.film.FilmService;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Positive;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -79,6 +78,17 @@ public class FilmController {
                 "и по году (если 0, то без фильтрации по жанру) {}", count, genreId, year, count, genreId, year);
         List<Film> films = filmService.getPopularFilm(count, genreId, year);
         log.info("getPopularFilm (GET /films/popular): Результат = {}", films);
+        return films;
+    }
+
+    //Поиск по названию фильма и/или по режиссёру. Возвращает список фильмов, отсортированных по популярности.
+    @GetMapping("/search")
+    public List<Film> searchFilmsByNameByDirector(@RequestParam(required = false) String query,
+                                                  @RequestParam(required = false) String by) {
+
+        log.info("searchFilmsByNameByDirector (GET /films/search?query={}&by={}):  ", query, by);
+        List<Film> films = filmService.searchFilmsByNameByDirector(query, by);
+        log.info("searchFilmsByNameByDirector (GET /films/search?query={}&by={}): Результат = {}", query, by, films);
         return films;
     }
 

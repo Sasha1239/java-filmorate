@@ -7,7 +7,6 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.director.DirectorService;
-import ru.yandex.practicum.filmorate.storage.director.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
@@ -78,7 +77,7 @@ public class FilmService {
     }
 
 
-    //Получение самых популярных фильмов по кол-ву лайков или получение первых 10 фильмов
+    //Поиск по названию фильмов и по режиссёру. Возвращает список фильмов, отсортированных по популярности.
     public List<Film> getPopularFilm(int count, Integer genreId, Integer year){
         // проверим валидность присланного жанра
         if (genreId != null) {
@@ -92,6 +91,12 @@ public class FilmService {
         return filmStorage.getPopularFilms(count, genreId, year);
     }
 
+    //Поиск по названию фильма и/или по режиссёру. Возвращает список фильмов, отсортированных по популярности.
+    public List<Film> searchFilmsByNameByDirector(String searchStr, String searchBy) {
+        //Так как searchStr и searchBy могут быть Null, то данные на валидность не проверяются
+        return filmStorage.searchFilmsByNameByDirector(searchStr, searchBy);
+
+    }
     public List<Film> getAllFilmsOfDirector (int directorId, String sortBy) {
         List<Film> films = new ArrayList<>();
         try {
