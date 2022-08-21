@@ -5,16 +5,22 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class UserService {
+
     private final UserStorage userStorage;
+
+    private final FilmStorage filmStorage;
 
     //Добавление пользователя
     public User create(User user) {
@@ -88,5 +94,45 @@ public class UserService {
         if ((user.getLogin() == null) || (user.getEmail() == null)) {
             throw new ValidationException("Используйте не null значения");
         }
+    }
+
+    public List<Film> getRecommendations(int idUser) {
+        // проверить наличие пользователя
+        getUser(idUser);
+        // собрать фильмы, которые понравились пользователям
+        HashMap<Integer, List<Integer>> userLikedFilms = new HashMap<>();
+        List<User> users = getAll();
+        for (User user : users) {
+            userLikedFilms.put(user.getId(), filmStorage.getUserLikedFilms(user.getId()));
+        }
+        // найти пользователей, с которыми максимальное пересечение
+        long maxIntersection = 0;
+        List<Integer> nearestUserIds = new ArrayList<>();
+        List<Integer> filmListIds = userLikedFilms.get(idUser);
+        for (Map.Entry<Integer, List<Integer>> entry : userLikedFilms.entrySet()) {
+            if (entry.getKey() == idUser) {
+                continue;
+            }
+            long intersection = entry.getValue().stream()
+                    .filter(filmListIds::contains)
+                    .count();
+            if (maxIntersection == intersection) {
+                nearestUserIds.add(entry.getKey());
+            } else if (maxIntersection < intersection) {
+                maxIntersection = intersection;
+                nearestUserIds.clear();
+                nearestUserIds.add(entry.getKey());
+            }
+        }
+        // вернуть рекомендованные фильмы
+        return nearestUserIds.stream()
+                .map(userLikedFilms::get)
+                .flatMap(Collection::stream)
+                .distinct()
+                .filter(filmId -> !filmListIds.contains(filmId))
+                .sorted()
+                .map(filmId -> filmStorage.getFilm(filmId).orElseThrow(
+                                () -> new NotFoundException("Попробуйте другой идентификатор фильма")))
+                .collect(Collectors.toList());
     }
 }
