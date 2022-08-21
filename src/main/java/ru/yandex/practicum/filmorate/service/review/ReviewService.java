@@ -52,4 +52,8 @@ public class ReviewService {
     public void addDislikeToReview(int userId, int reviewId) {
         reviewStorage.addDislikeToReview(reviewId, userId);
     }
+
+    public void deleteLikeOrDislike (int reviewId, int userId) {
+        reviewStorage.deleteLikeOrDislike(reviewId, userId);
+    }
 }

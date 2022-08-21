@@ -21,6 +21,8 @@ public interface ReviewStorage {
 
     public void addDislikeToReview(int reviewId, int userId);
 
+    public void deleteLikeOrDislike(int reviewId, int userId);
+
     public List<Review> getReviewsOfFilm(int filmId, int count);
 
     public int getUsefulOfReview(int reviewId);
