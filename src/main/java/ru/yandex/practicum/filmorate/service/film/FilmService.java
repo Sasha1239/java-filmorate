@@ -94,6 +94,12 @@ public class FilmService {
         return filmStorage.getPopularFilms(count, genreId, year);
     }
 
+    //Поиск по названию фильма и/или по режиссёру. Возвращает список фильмов, отсортированных по популярности.
+    public List<Film> searchFilmsByNameByDirector(String searchStr, String searchBy) {
+        //Так как searchStr и searchBy могут быть Null, то данные на валидность не проверяются
+        return filmStorage.searchFilmsByNameByDirector(searchStr, searchBy);
+
+    }
     public List<Film> getAllFilmsOfDirector (int directorId, String sortBy) {
         List<Film> films = new ArrayList<>();
         try {
