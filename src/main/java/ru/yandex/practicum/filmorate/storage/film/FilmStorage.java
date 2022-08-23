@@ -28,4 +28,6 @@ public interface FilmStorage {
 
     List<Integer> getUserLikedFilms(int idUser);
     List<Film> searchFilmsByNameByDirector(String searchStr, String searchBy);
+
+    List<Film> getCommonFilms(int idUser, int idFriend);
 }

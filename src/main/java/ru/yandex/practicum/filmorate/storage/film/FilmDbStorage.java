@@ -253,4 +253,19 @@ public class FilmDbStorage implements FilmStorage {
 
     }
 
+    @Override
+    public List<Film> getCommonFilms(int idUser, int idFriend) {
+        final String searchFilmsSql = "SELECT * " +
+                "FROM FILM f " +
+                "JOIN MPA M on M.MPA_RATING_ID = f.MPA_RATING " +
+                "JOIN FILM_LIKES l1 on (l1.film_id= f.film_id AND l1.user_id = ?) " +
+                "JOIN FILM_LIKES l2 on (l2.film_id= f.film_id AND l2.user_id = ?) " +
+                "LEFT JOIN " +
+                "(SELECT film_id, COUNT(user_id) as rate " +
+                "FROM FILM_LIKES " +
+                "GROUP BY film_id) fl ON (fl.film_id = f.film_id) " +
+                "ORDER BY fl.rate DESC ";
+        return jdbcTemplate.query(searchFilmsSql, this::makeFilm, idUser, idFriend);
+    }
+
 }
