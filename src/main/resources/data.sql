@@ -10,3 +10,13 @@ MERGE INTO GENRE (GENRE_ID, GENRE_NAME) VALUES (3, 'Мультфильм');
 MERGE INTO GENRE (GENRE_ID, GENRE_NAME) VALUES (4, 'Триллер');
 MERGE INTO GENRE (GENRE_ID, GENRE_NAME) VALUES (5, 'Документальный');
 MERGE INTO GENRE (GENRE_ID, GENRE_NAME) VALUES (6, 'Боевик');
+
+MERGE INTO feed_events(event_id, event_name) VALUES
+    (1, 'LIKE'),
+    (2, 'REVIEW'),
+    (3, 'FRIEND');
+
+MERGE INTO feed_operations(operation_id, operation_name) VALUES
+    (1, 'REMOVE'),
+    (2, 'ADD'),
+    (3, 'UPDATE');
