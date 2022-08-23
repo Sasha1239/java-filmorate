@@ -116,7 +116,7 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public void addLikeFilm(int idFilm, int idUser) {
-        final String addLikeFilmSql = "INSERT INTO FILM_LIKES (FILM_ID, USER_ID) VALUES (?, ?);";
+        final String addLikeFilmSql = "MERGE INTO FILM_LIKES (FILM_ID, USER_ID) VALUES (?, ?);";
 
         jdbcTemplate.update(addLikeFilmSql, idFilm, idUser);
     }
