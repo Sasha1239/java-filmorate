@@ -1,13 +1,19 @@
 package ru.yandex.practicum.filmorate.service.film;
 
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.feed.Event;
+import ru.yandex.practicum.filmorate.model.feed.Operation;
 import ru.yandex.practicum.filmorate.service.director.DirectorService;
 import ru.yandex.practicum.filmorate.storage.director.DirectorStorage;
+import ru.yandex.practicum.filmorate.storage.feed.FeedStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
@@ -19,20 +25,15 @@ import java.util.Optional;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
+@FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 public class FilmService {
-    private static final LocalDate MAX_EARLY_DATE_FILM = LocalDate.of(1895, 12, 28);
-    private final FilmStorage filmStorage;
-    private final UserStorage userStorage;
-    private final GenreStorage genreStorage;
-    private final DirectorService directorService;
-
-    @Autowired
-    public FilmService(FilmStorage filmStorage, UserStorage userStorage, DirectorService directorService, GenreStorage genreStorage){
-        this.filmStorage = filmStorage;
-        this.userStorage = userStorage;
-        this.directorService = directorService;
-        this.genreStorage = genreStorage;
-    }
+    static LocalDate MAX_EARLY_DATE_FILM = LocalDate.of(1895, 12, 28);
+    FilmStorage filmStorage;
+    UserStorage userStorage;
+    GenreStorage genreStorage;
+    FeedStorage feedStorage;
+    DirectorService directorService;
 
     //Добавление фильма
     public Film create(Film film){
@@ -68,6 +69,7 @@ public class FilmService {
         validateFindUserId(idUser);
         getFilm(idFilm);
         filmStorage.addLikeFilm(idFilm, idUser);
+        feedStorage.feed(idUser, idFilm, Event.LIKE, Operation.ADD);
     }
 
     //Пользователь удаляет лайк
@@ -75,8 +77,8 @@ public class FilmService {
         getFilm(idFilm);
         validateFindUserId(idUser);
         filmStorage.removeLikeFilm(idFilm, idUser);
+        feedStorage.feed(idUser, idFilm, Event.LIKE, Operation.REMOVE);
     }
-
 
     //Получение самых популярных фильмов по кол-ву лайков или получение первых 10 фильмов
     public List<Film> getPopularFilm(int count, Integer genreId, Integer year){

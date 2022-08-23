@@ -1,12 +1,18 @@
 package ru.yandex.practicum.filmorate.service.user;
 
+import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.model.feed.Event;
+import ru.yandex.practicum.filmorate.model.feed.Feed;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.feed.Operation;
+import ru.yandex.practicum.filmorate.storage.feed.FeedStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
@@ -16,11 +22,14 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 @RequiredArgsConstructor
+@FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 public class UserService {
 
-    private final UserStorage userStorage;
+    UserStorage userStorage;
 
-    private final FilmStorage filmStorage;
+    FilmStorage filmStorage;
+
+    FeedStorage feedStorage;
 
     //Добавление пользователя
     public User create(User user) {
@@ -60,6 +69,7 @@ public class UserService {
         getUser(idUser);
         getUser(idFriend);
         userStorage.addFriend(idUser, idFriend);
+        feedStorage.feed(idUser, idFriend, Event.FRIEND, Operation.ADD);
     }
 
     //Удаление из друзей
@@ -67,6 +77,7 @@ public class UserService {
         getUser(idUser);
         getUser(idFriend);
         userStorage.removeFriend(idUser, idFriend);
+        feedStorage.feed(idUser, idFriend, Event.FRIEND, Operation.REMOVE);
     }
 
     //Вывод друзей пользователя
@@ -134,5 +145,11 @@ public class UserService {
                 .map(filmId -> filmStorage.getFilm(filmId).orElseThrow(
                                 () -> new NotFoundException("Попробуйте другой идентификатор фильма")))
                 .collect(Collectors.toList());
+    }
+
+    // Вывод ленты пользователя
+    public List<Feed> getFeed(int userId) {
+        getUser(userId);
+        return feedStorage.getByUserId(userId);
     }
 }
