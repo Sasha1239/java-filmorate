@@ -129,4 +129,11 @@ public class FilmService {
             throw e;
         }
     }
+
+    public List<Film> getCommonFilms(int idUser, int idFriend) {
+        validateFindUserId(idUser);
+        validateFindUserId(idFriend);
+        List<Film> films = filmStorage.getCommonFilms(idUser, idFriend);
+        return films;
+    }
 }
