@@ -87,4 +87,16 @@ public class FilmController {
                                             @RequestParam(defaultValue = "year") String sortBy) {
         return filmService.getAllFilmsOfDirector(directorId, sortBy);
     }
+
+    //Поиск по названию фильма и/или по режиссёру. Возвращает список фильмов, отсортированных по популярности.
+    @GetMapping("/search")
+    public List<Film> searchFilmsByNameByDirector(@RequestParam(required = false) String query,
+                                                  @RequestParam(required = false) String by) {
+
+        log.info("searchFilmsByNameByDirector (GET /films/search?query={}&by={}):  ", query, by);
+        List<Film> films = filmService.searchFilmsByNameByDirector(query, by);
+        log.info("searchFilmsByNameByDirector (GET /films/search?query={}&by={}): Результат = {}", query, by, films);
+        return films;
+    }
+
 }

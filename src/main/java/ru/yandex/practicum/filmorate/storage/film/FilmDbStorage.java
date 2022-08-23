@@ -207,8 +207,50 @@ public class FilmDbStorage implements FilmStorage {
     }
 
 
+    @Override
     public List<Integer> getUserLikedFilms(int idUser) {
         return jdbcTemplate.query("SELECT film_id FROM film_likes WHERE user_id = ?",
                 (resultSet, rowNum) -> resultSet.getInt("film_id"), idUser);
     }
+
+    @Override
+
+    public List<Film> searchFilmsByNameByDirector(String searchStr, String searchBy) {
+        StringBuilder searchFilmsByNameByDirectorSql = new StringBuilder();
+        searchFilmsByNameByDirectorSql.append(
+                "SELECT DISTINCT f.film_id, f.film_name, f.description, f.release_date, f.duration, " +
+                        "m.mpa_rating_id, m.mpa_name, fl.rate "+
+                        "FROM FILM f " +
+                        "JOIN MPA m ON (m.mpa_rating_id = f.mpa_rating) " +
+                        "LEFT JOIN " +
+                        "(SELECT film_id, COUNT(user_id) as rate " +
+                        "FROM FILM_LIKES " +
+                        "GROUP BY film_id) fl ON (fl.film_id = f.film_id) " +
+                        "LEFT JOIN FILM_DIRECTOR fd ON (fd.film_id = f.film_id)" +
+                        "LEFT JOIN DIRECTORS d ON (fd.director_id = d.director_id) ");
+
+        if (searchStr != null && searchBy != null) {
+            if (searchBy.toUpperCase().contains("TITLE") || searchBy.toUpperCase().contains("DIRECTOR")) {
+                searchFilmsByNameByDirectorSql.append(
+                        "WHERE ");
+                if (searchBy.toUpperCase().contains("TITLE")) {
+                    searchFilmsByNameByDirectorSql.append(
+                            "UPPER(f.film_name) like '%" + searchStr.toUpperCase() + "%' ");
+                }
+                if (searchBy.toUpperCase().contains("DIRECTOR")) {
+                    if (searchBy.toUpperCase().contains("TITLE")) {
+                        searchFilmsByNameByDirectorSql.append(
+                                " OR ");
+                    }
+                    searchFilmsByNameByDirectorSql.append(
+                            "UPPER(d.director_name) like '%" + searchStr.toUpperCase() + "%' ");
+                }
+            }
+        }
+        searchFilmsByNameByDirectorSql.append(
+                "ORDER BY fl.rate DESC ");
+        return jdbcTemplate.query(searchFilmsByNameByDirectorSql.toString(), this::makeFilm);
+
+    }
+
 }
