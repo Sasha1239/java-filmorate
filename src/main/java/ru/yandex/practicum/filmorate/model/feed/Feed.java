@@ -10,8 +10,6 @@ import javax.validation.constraints.PositiveOrZero;
 @Data
 @SuperBuilder
 @NoArgsConstructor
-@ToString
-@EqualsAndHashCode
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Feed {
 
