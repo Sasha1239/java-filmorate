@@ -3,6 +3,8 @@ package ru.yandex.practicum.filmorate.controller;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.model.feed.Feed;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.user.UserService;
 
@@ -44,6 +46,12 @@ public class UserController {
         return userService.getUser(id);
     }
 
+    //Удаление пользователя по идентификатору
+    @DeleteMapping("/{userId}")
+    public void removeUser(@PathVariable int userId){
+        userService.removeUser(userId);
+    }
+
     //Добавление в друзья
     @PutMapping("/{id}/friends/{friendId}")
     public void addFriend(@PathVariable int id, @PathVariable int friendId){
@@ -67,4 +75,17 @@ public class UserController {
     public List<User> getCommonFriends(@PathVariable int id, @PathVariable int otherId){
         return userService.getCommonFriends(id, otherId);
     }
+
+    //Вывод рекомендаций
+    @GetMapping("/{id}/recommendations")
+    public List<Film> getRecommendations(@PathVariable int id) {
+        return userService.getRecommendations(id);
+    }
+
+    // Вывод ленты пользователя
+    @GetMapping("/{id}/feed")
+    public List<Feed> getFeed(@PathVariable int id){
+        return userService.getFeed(id);
+    }
+
 }

@@ -319,6 +319,36 @@ public class FilmControllerTest extends FilmorateApplicationTests {
         assertEquals(filmList.get(0).getId(), film.getId(), "Фильмы не совпадают");
     }
 
+    //Удаление фильма по идентификатору
+    @Test
+    public void removeFilmId(){
+        Film film = new Film();
+        film.setName("Наименование фильма");
+        film.setDescription("Описание фильма");
+        film.setDuration(50);
+        film.setReleaseDate(LocalDate.of(1992, 12, 10));
+        film.setMpa(new Mpa(1, "G"));
+        film.setGenres(genres);
+        filmController.create(film);
+
+        filmController.removeFilm(film.getId());
+
+        List<Film> filmList = filmController.getAll();
+
+        assertEquals(filmList.size(), 0, "Фильм не удален");
+    }
+
+    //Удаление несуществующего фильма
+    @Test
+    public void removeUnknownFilmId(){
+        Throwable throwable = assertThrows(NotFoundException.class, () -> {
+            filmController.removeFilm(1);
+        });
+
+        assertEquals("Попробуйте другой идентификатор фильма", throwable.getMessage(),
+                "Текст ошибки валидации разный");
+    }
+
     //Получение неизвестного фильма по идентификатору
     @Test
     public void getUnknownFilmId() {
@@ -357,7 +387,7 @@ public class FilmControllerTest extends FilmorateApplicationTests {
 
         filmController.addLikeFilm(film.getId(), user.getId());
 
-        List<Film> likesFilm = filmController.getPopularFilm(10);
+        List<Film> likesFilm = filmController.getPopularFilm(10, null, null);
 
         assertEquals(likesFilm.size(), 1, "Лайк фильму не поставлен");
     }
@@ -457,8 +487,94 @@ public class FilmControllerTest extends FilmorateApplicationTests {
         filmController.addLikeFilm(film.getId(), user.getId());
         filmController.addLikeFilm(film1.getId(), user.getId());
 
-        List<Film> popularFilm = filmController.getPopularFilm(2);
+        List<Film> popularFilm = filmController.getPopularFilm(2, null, null);
 
         assertEquals(popularFilm.size(), 2, "Количество не совпадает");
+    }
+
+    //Получение самых популярных фильмов по кол-ву лайков с фильтрацией по году
+    @Test
+    public void getPopularFilmWithReleaseYearShouldReturn2Films() {
+        Film film = new Film();
+        film.setName("Наименование фильма");
+        film.setDescription("Описание фильма");
+        film.setDuration(50);
+        film.setReleaseDate(LocalDate.of(1992, 12, 10));
+        film.setMpa(new Mpa(1, "Тест"));
+        filmController.create(film);
+
+        Film film1 = new Film();
+        film1.setName("Наименование фильма1");
+        film1.setDescription("Описание фильма1");
+        film1.setDuration(50);
+        film1.setReleaseDate(LocalDate.of(1992, 2, 12));
+        film1.setMpa(new Mpa(2, "Тест2"));
+        filmController.create(film1);
+
+        Film film2 = new Film();
+        film2.setName("Наименование фильма2");
+        film2.setDescription("Описание фильма2");
+        film2.setDuration(30);
+        film2.setReleaseDate(LocalDate.of(2000, 2, 2));
+        film2.setMpa(new Mpa(3, "Тест3"));
+        film2.setGenres(genres);
+        filmController.create(film2);
+
+        User user = new User();
+        user.setLogin("Логин пользователя");
+        user.setName("Наименование пользователя");
+        user.setBirthday(LocalDate.now().minusYears(5));
+        userController.create(user);
+
+        filmController.addLikeFilm(film.getId(), user.getId());
+        filmController.addLikeFilm(film1.getId(), user.getId());
+        filmController.addLikeFilm(film2.getId(), user.getId());
+
+        List<Film> popularFilm = filmController.getPopularFilm(10, null, 1992);
+
+        assertEquals(popularFilm.size(), 2, "Количество не совпадает");
+    }
+
+    //Получение самых популярных фильмов по кол-ву лайков с фильтрацией по году
+    @Test
+    public void getPopularFilmWithReleaseYearShouldReturn0Films() {
+        Film film = new Film();
+        film.setName("Наименование фильма");
+        film.setDescription("Описание фильма");
+        film.setDuration(50);
+        film.setReleaseDate(LocalDate.of(1992, 12, 10));
+        film.setMpa(new Mpa(1, "Тест"));
+        filmController.create(film);
+
+        Film film1 = new Film();
+        film1.setName("Наименование фильма1");
+        film1.setDescription("Описание фильма1");
+        film1.setDuration(50);
+        film1.setReleaseDate(LocalDate.of(1992, 2, 12));
+        film1.setMpa(new Mpa(2, "Тест2"));
+        filmController.create(film1);
+
+        Film film2 = new Film();
+        film2.setName("Наименование фильма2");
+        film2.setDescription("Описание фильма2");
+        film2.setDuration(30);
+        film2.setReleaseDate(LocalDate.of(2000, 2, 2));
+        film2.setMpa(new Mpa(3, "Тест3"));
+        film2.setGenres(genres);
+        filmController.create(film2);
+
+        User user = new User();
+        user.setLogin("Логин пользователя");
+        user.setName("Наименование пользователя");
+        user.setBirthday(LocalDate.now().minusYears(5));
+        userController.create(user);
+
+        filmController.addLikeFilm(film.getId(), user.getId());
+        filmController.addLikeFilm(film1.getId(), user.getId());
+        filmController.addLikeFilm(film2.getId(), user.getId());
+
+        List<Film> popularFilm = filmController.getPopularFilm(10, null, 1995);
+
+        assertEquals(popularFilm.size(), 0, "Количество не совпадает");
     }
 }

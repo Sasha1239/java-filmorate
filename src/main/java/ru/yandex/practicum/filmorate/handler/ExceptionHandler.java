@@ -10,7 +10,6 @@ import ru.yandex.practicum.filmorate.exception.ValidationException;
 
 import javax.validation.ConstraintViolationException;
 import java.util.Map;
-import java.util.NoSuchElementException;
 
 @RestControllerAdvice
 @Slf4j
@@ -49,5 +48,4 @@ public class ExceptionHandler {
     public ResponseEntity<String> handleConstraintViolationException(ConstraintViolationException e){
         return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
     }
-
 }

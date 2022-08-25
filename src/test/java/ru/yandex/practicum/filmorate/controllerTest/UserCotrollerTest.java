@@ -34,7 +34,7 @@ public class UserCotrollerTest extends FilmorateApplicationTests {
         userController.create(user);
 
         String validatorMessage = validator.validate(user).iterator().next().getMessage();
-        assertEquals("Почта не может быть пустой или содержать пробельные символы",
+        assertEquals("Неправильно написали почту",
                 validatorMessage, "Текст ошибки валидации разный");
     }
 
@@ -49,7 +49,7 @@ public class UserCotrollerTest extends FilmorateApplicationTests {
         userController.create(user);
 
         String validatorMessage = validator.validate(user).iterator().next().getMessage();
-        assertEquals("Почта не может быть пустой или содержать пробельные символы",
+        assertEquals("Неправильно написали почту",
                 validatorMessage, "Текст ошибки валидации разный");
     }
 
@@ -150,6 +150,56 @@ public class UserCotrollerTest extends FilmorateApplicationTests {
 
         String validatorMessage = validator.validate(user).iterator().next().getMessage();
         assertEquals("Дата рождения не может быть в будущем", validatorMessage,
+                "Текст ошибки валидации разный");
+    }
+
+    //Получение пользователя по идентификатору
+    @Test
+    public void getUserId(){
+        User user = new User();
+        user.setName("Наименование пользователя");
+        user.setLogin("Логин пользователя");
+        user.setEmail("test@yandex.ru");
+        user.setBirthday(LocalDate.now());
+        userController.create(user);
+
+        User user1 = new User();
+        user1.setName("Наименование пользователя1");
+        user1.setLogin("Логин пользователя1");
+        user1.setEmail("test1@yandex.ru");
+        user1.setBirthday(LocalDate.now());
+        userController.create(user1);
+
+        List<User> userList = userController.getAll();
+
+        assertEquals(userList.size(), 2, "Количество пользователей не совпадает");
+        assertEquals(userList.get(0).getId(), user.getId(), "Пользователи не совпадают");
+    }
+
+    //Удаление пользователя по идентификатору
+    @Test
+    public void removeUserId(){
+        User user = new User();
+        user.setName("Наименование пользователя");
+        user.setLogin("Логин пользователя");
+        user.setEmail("test@yandex.ru");
+        user.setBirthday(LocalDate.now());
+        userController.create(user);
+
+        userController.removeUser(user.getId());
+
+        List<User> userList = userController.getAll();
+
+        assertEquals(userList.size(), 0, "Пользователь не удален");
+    }
+
+    //Удаление несуществующего пользователя
+    @Test
+    public void removeUnknownUserId(){
+        Throwable throwable = assertThrows(NotFoundException.class, () -> {
+            userController.removeUser(1);
+        });
+        assertEquals("Попробуйте другой идентификатор пользователя", throwable.getMessage(),
                 "Текст ошибки валидации разный");
     }
 
