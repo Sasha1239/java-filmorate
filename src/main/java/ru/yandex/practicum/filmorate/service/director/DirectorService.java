@@ -19,7 +19,7 @@ public class DirectorService {
 
     public Director getDirectorById (long id) {
         return directorStorage.getDirectorById(id)
-                .orElseThrow(() -> new NotFoundException("Попробуйте другой идентификатор режисера"));
+                .orElseThrow(() -> new NotFoundException("Попробуйте другой идентификатор режисcера"));
     }
 
     public List<Director> getDirectorList() {
@@ -32,7 +32,6 @@ public class DirectorService {
 
     public Director updateDirector (Director director){
         getDirectorById(director.getId());
-        directorStorage.getDirectorById(director.getId());
         return directorStorage.updateDirector(director);
     }
 
