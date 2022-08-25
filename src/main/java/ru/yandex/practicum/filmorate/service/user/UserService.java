@@ -108,7 +108,6 @@ public class UserService {
     }
 
     public List<Film> getRecommendations(int idUser) {
-        // проверить наличие пользователя
         getUser(idUser);
         return filmStorage.getRecommendations(idUser);
     }
