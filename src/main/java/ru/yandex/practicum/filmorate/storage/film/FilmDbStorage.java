@@ -249,15 +249,18 @@ public class FilmDbStorage implements FilmStorage {
                         "LEFT JOIN DIRECTORS d ON (fd.director_id = d.director_id) ");
 
         if (searchStr != null && searchBy != null) {
-            if (searchBy.toUpperCase().contains("TITLE") || searchBy.toUpperCase().contains("DIRECTOR")) {
+            boolean isSearchByTitle = searchBy.toUpperCase().contains("TITLE");
+            boolean isSearchByDirector = searchBy.toUpperCase().contains("DIRECTOR");
+
+            if (isSearchByTitle || isSearchByDirector) {
                 searchFilmsByNameByDirectorSql.append(
                         "WHERE ");
-                if (searchBy.toUpperCase().contains("TITLE")) {
+                if (isSearchByTitle) {
                     searchFilmsByNameByDirectorSql.append(
                             "UPPER(f.film_name) like '%" + searchStr.toUpperCase() + "%' ");
                 }
-                if (searchBy.toUpperCase().contains("DIRECTOR")) {
-                    if (searchBy.toUpperCase().contains("TITLE")) {
+                if (isSearchByDirector) {
+                    if (isSearchByTitle) {
                         searchFilmsByNameByDirectorSql.append(
                                 " OR ");
                     }
