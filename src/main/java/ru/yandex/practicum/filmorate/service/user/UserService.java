@@ -108,43 +108,8 @@ public class UserService {
     }
 
     public List<Film> getRecommendations(int idUser) {
-        // проверить наличие пользователя
         getUser(idUser);
-        // собрать фильмы, которые понравились пользователям
-        HashMap<Integer, List<Integer>> userLikedFilms = new HashMap<>();
-        List<User> users = getAll();
-        for (User user : users) {
-            userLikedFilms.put(user.getId(), filmStorage.getUserLikedFilms(user.getId()));
-        }
-        // найти пользователей, с которыми максимальное пересечение
-        long maxIntersection = 0;
-        List<Integer> nearestUserIds = new ArrayList<>();
-        List<Integer> filmListIds = userLikedFilms.get(idUser);
-        for (Map.Entry<Integer, List<Integer>> entry : userLikedFilms.entrySet()) {
-            if (entry.getKey() == idUser) {
-                continue;
-            }
-            long intersection = entry.getValue().stream()
-                    .filter(filmListIds::contains)
-                    .count();
-            if (maxIntersection == intersection) {
-                nearestUserIds.add(entry.getKey());
-            } else if (maxIntersection < intersection) {
-                maxIntersection = intersection;
-                nearestUserIds.clear();
-                nearestUserIds.add(entry.getKey());
-            }
-        }
-        // вернуть рекомендованные фильмы
-        return nearestUserIds.stream()
-                .map(userLikedFilms::get)
-                .flatMap(Collection::stream)
-                .distinct()
-                .filter(filmId -> !filmListIds.contains(filmId))
-                .sorted()
-                .map(filmId -> filmStorage.getFilm(filmId).orElseThrow(
-                                () -> new NotFoundException("Попробуйте другой идентификатор фильма")))
-                .collect(Collectors.toList());
+        return filmStorage.getRecommendations(idUser);
     }
 
     // Вывод ленты пользователя
