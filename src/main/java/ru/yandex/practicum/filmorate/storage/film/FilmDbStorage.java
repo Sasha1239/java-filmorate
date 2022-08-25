@@ -206,15 +206,34 @@ public class FilmDbStorage implements FilmStorage {
         return new Film(idFilm, nameFilm, descriptionFilm, releaseDateFilm, durationFilm, mpaRatingFilm, genres, directorList);
     }
 
-
     @Override
-    public List<Integer> getUserLikedFilms(int idUser) {
-        return jdbcTemplate.query("SELECT film_id FROM film_likes WHERE user_id = ?",
-                (resultSet, rowNum) -> resultSet.getInt("film_id"), idUser);
+    public List<Film> getRecommendations(int idUser) {
+        String likedFilms = "SELECT film_id " +
+                "FROM film_likes " +
+                "WHERE user_id = ?";
+        String maxIntersection = "SELECT COUNT(film_id) " +
+                "FROM film_likes " +
+                "WHERE film_id IN (" + likedFilms + ") AND user_id <> ? " +
+                "GROUP BY user_id " +
+                "ORDER BY COUNT(film_id) DESC " +
+                "LIMIT 1";
+        String nearestUsers = "SELECT user_id " +
+                "FROM film_likes " +
+                "WHERE film_id IN ("+ likedFilms + ") AND user_id <> ? " +
+                "GROUP BY user_id " +
+                "HAVING COUNT(film_id) = (" + maxIntersection + ")";
+        String filmIds = "SELECT DISTINCT film_id " +
+                "FROM film_likes " +
+                "WHERE user_id IN (" + nearestUsers + ") AND film_id NOT IN (" + likedFilms + ")";
+        String recommendedFilms = "SELECT * " +
+                "FROM film " +
+                "JOIN mpa ON mpa.mpa_rating_id = film.mpa_rating " +
+                "WHERE film_id IN (" + filmIds + ") " +
+                "ORDER BY film_id";
+        return jdbcTemplate.query(recommendedFilms, this::makeFilm, idUser, idUser, idUser, idUser, idUser);
     }
 
     @Override
-
     public List<Film> searchFilmsByNameByDirector(String searchStr, String searchBy) {
         StringBuilder searchFilmsByNameByDirectorSql = new StringBuilder();
         searchFilmsByNameByDirectorSql.append(
